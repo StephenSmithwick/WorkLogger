@@ -13,7 +13,7 @@ export const label = pgTable('label', {
   name: text('name').notNull()
 });
 
-export const workLog_label = pgTable("worklog_label", {
+export const worklog_label = pgTable("worklog_label", {
   worklogId: integer("worklog_id").notNull().references(() => worklog.id),
   labelId: integer("label_id").notNull().references(() => label.id),
 }, (table) => [

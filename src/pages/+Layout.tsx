@@ -16,8 +16,6 @@ export default function RootLayout(props: FlowProps) {
           <a href={getRoute("/")}>Home</a>
           <span>{" | "}</span>
           <a href={getRoute("/dashboard")}>Dashboard</a>
-          <span>{" | "}</span>
-          <Counter />
         </nav>
         {props.children}
       </div>

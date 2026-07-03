@@ -9,28 +9,25 @@ export default function Page() {
   })
 
   const [data] = createResource(async () => {
-    const res = await honoClient.todos.$get()
+    const res = await honoClient.worklog.$get()
     return res.json()
-  })
+  }, { initialValue: [] })
 
   return (
     <>
       <div>
-        <h1>My Vike + Solid app</h1>
-        This page is:
         <ul>
-          <li>Rendered to HTML.</li>
-          <li>
-            Interactive. <Counter />
-          </li>
-          <li>
-            Working fetch:{" "}
-            {data.loading
-              ? "Loading..."
-              : data.error
-                ? `Error: ${data.error.message}`
-                : JSON.stringify(data())}
-          </li>
+          {data.loading
+            ? <li>Loading...</li>
+            : data.error
+              ? <li>{`Error: ${data.error.message}`}</li>
+              : data().map(wl => <li><ul>
+                <li class="time">{wl.time}</li>
+                <li class="duration">{wl.duration}</li>
+                <li class="name">{wl.name}</li>
+                <li class="notes">{wl.notes}</li>
+                <li class="labels">{wl.labels.map(label => label.name)}</li>
+              </ul></li>)}
         </ul>
       </div>
     </>

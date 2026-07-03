@@ -8,8 +8,6 @@ export default function DashboardLayout(props: FlowProps) {
         <a href={getRoute("/dashboard")}>Dashboard</a>
         <span>{" | "}</span>
         <a href={getRoute("/dashboard/settings")}>Settings</a>
-        <span>{" | "}</span>
-        <Counter />
       </aside>
       {props.children}
     </div>
