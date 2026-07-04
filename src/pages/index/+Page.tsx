@@ -26,20 +26,10 @@ export default function Page() {
                 <li class="duration">{wl.duration}</li>
                 <li class="name">{wl.name}</li>
                 <li class="notes">{wl.notes}</li>
-                <li class="labels">{wl.labels.map(label => label.name)}</li>
+                <li class="labels">{wl.labels.map(label => <span>{label.name}</span>)}</li>
               </ul></li>)}
         </ul>
       </div>
     </>
-  )
-}
-
-function Counter() {
-  const [count, setCount] = createSignal(0)
-
-  return (
-    <button type="button" onClick={() => setCount((count) => count + 1)}>
-      Counter {count()}
-    </button>
   )
 }
