@@ -3,7 +3,6 @@ import { eq, sql } from "drizzle-orm"
 import { db } from '@/db';
 import { worklog, worklog_label, label } from '@/schema';
 
-type WorkLog = typeof worklog.$inferInsert;
 type Label = typeof label.$inferInsert;
 type WorklogLabel = typeof worklog_label.$inferInsert;
 
@@ -12,6 +11,7 @@ export const worklogController = new Hono()
 worklogController.get("/", async (c) => {
   try {
       const result = await db.select({
+        id: worklog.id,
         name: worklog.name,
         notes: worklog.notes,
         time: worklog.time,
@@ -20,8 +20,7 @@ worklogController.get("/", async (c) => {
       }).from(worklog)
           .leftJoin(worklog_label, eq(worklog.id, worklog_label.worklogId))
           .leftJoin(label, eq(worklog_label.labelId, label.id))
-          .groupBy(worklog.name, worklog.notes, worklog.time, worklog.duration);
-      // console.log(Bun.inspect(result, { depth: 5, colors: true }))
+          .groupBy(worklog.id);
       return c.json(result);
     } catch (error) {
       console.error('Database query failed:', error);
@@ -29,40 +28,38 @@ worklogController.get("/", async (c) => {
     }
 })
 
-async function ensureLabelsExist(labels: Label[]) : Promise<Number[]> {
+async function ensureLabelsExist(labels: Label[]) : Promise<number[]> {
   const [existingLabels, newLabels] = labels.reduce<[Label[], Label[]]>(
     (acc, element) => {
       acc[element.id ? 0 : 1].push(element);
       return acc;
     }, [[], []]);
-  console.log('newLabels', Bun.inspect(newLabels, { depth: 5, colors: true }))
-  const result = await db.insert(label)
-    .values(newLabels)
-    .returning({ id: label.id });
 
-  return [...existingLabels, ...result].map(label => label.id!);
+  const createdLabels = newLabels.length > 0
+    ? await db.insert(label).values(newLabels).returning({ id: label.id })
+    : [];
+
+  return [...existingLabels, ...createdLabels].map(label => label.id!);
 }
 
 
 worklogController.post('/', async (c) => {
   const newWorklog = await c.req.json();
-  console.log('newWorklog', Bun.inspect(newWorklog, { depth: 5, colors: true }))
+  // console.log('New Worklog', Bun.inspect(newWorklog, { depth: 5, colors: true }))
 
   try {
     const labelIds = await ensureLabelsExist(newWorklog.labels);
-    console.log('labelIds', Bun.inspect(labelIds, { depth: 5, colors: true }))
 
     const [inserted] = await db.insert(worklog).values({
       time: new Date(newWorklog.time),
       duration: newWorklog.duration,
       name: newWorklog.name,
       notes: newWorklog.notes,
-    }).returning(worklog.$inferSelect);
+    }).returning();
 
     if (labelIds.length > 0) {
-      const worklogId = inserted.id as Number;
-      const labelsConnections = labelIds.map(labelId => ({ worklogId, labelId })) as WorklogLabel;
-      console.log('labelsConnections', Bun.inspect(labelsConnections, { depth: 5, colors: true }))
+      const worklogId = inserted.id;
+      const labelsConnections : WorklogLabel[] = labelIds.map(labelId => ({ worklogId, labelId }));
       await db.insert(worklog_label).values(labelsConnections);
     }
 
