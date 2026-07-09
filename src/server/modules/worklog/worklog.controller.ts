@@ -29,11 +29,8 @@ worklogController.get("/", async (c) => {
 })
 
 async function ensureLabelsExist(labels: Label[]) : Promise<number[]> {
-  const [existingLabels, newLabels] = labels.reduce<[Label[], Label[]]>(
-    (acc, element) => {
-      acc[element.id ? 0 : 1].push(element);
-      return acc;
-    }, [[], []]);
+  const { existing: existingLabels = [], new: newLabels = [] } =
+    Object.groupBy(labels, l => l.id ? "existing" : "new");
 
   const createdLabels = newLabels.length > 0
     ? await db.insert(label).values(newLabels).returning({ id: label.id })
