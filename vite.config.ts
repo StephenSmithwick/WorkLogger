@@ -1,12 +1,16 @@
-import vikeRoutegen from "@blankeos/vike-routegen"
-import vike from "vike/plugin"
-import vikeSolid from "vike-solid/vite"
-import { defineConfig } from "vite"
+import { cloudflare } from "@cloudflare/vite-plugin";
+import { defineConfig } from "vite";
+import solid from "vite-plugin-solid";
+import path from "path";
 
 export default defineConfig({
-  plugins: [vike(), vikeSolid(), vikeRoutegen()],
-  resolve: { tsconfigPaths: true },
-  server: { port: 3000 },
-  preview: { port: 3000 },
-  envPrefix: ["PUBLIC_"],
-})
+  plugins: [cloudflare(), solid({ ssr: true, exclude: "src/server/**" })],
+  resolve: {
+    alias: {
+      "@": path.resolve(__dirname, "./src"),
+    },
+  },
+  css: {
+    modules: false,
+  },
+});

@@ -1,0 +1,2 @@
+# Found @ https://console.neon.tech > Project > Dashboard > Connect > Connection String
+DATABASE_URL="<neon postrgres connection string>"
