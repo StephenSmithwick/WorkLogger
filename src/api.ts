@@ -3,13 +3,23 @@ import { db } from "@/db";
 import { eq, sql } from "drizzle-orm";
 import { label, worklog, worklog_label } from "@/schema";
 
-export const api = new Hono<{ Bindings: CloudflareBindings }>()
+type DB = ReturnType<typeof db>;
 type Label = typeof label.$inferInsert;
 type WorklogLabel = typeof worklog_label.$inferInsert;
 
+export const api = new Hono<{
+  Bindings: CloudflareBindings;
+  Variables: { db: DB };
+}>();
+
+api.use("*", async (c, next) => {
+  c.set("db", db(c.env));
+  await next();
+});
+
 api.get("/label", async (c) => {
   try {
-    const result = await db(c.env).select().from(label);
+    const result = await c.var.db.select().from(label);
     return c.json(result);
   } catch (error) {
     console.error("Database query failed:", error);
@@ -19,7 +29,7 @@ api.get("/label", async (c) => {
 
 api.get("/worklog", async (c) => {
   try {
-    const result = await db(c.env)
+    const result = await c.var.db
       .select({
         id: worklog.id,
         name: worklog.name,
@@ -41,7 +51,7 @@ api.get("/worklog", async (c) => {
   }
 });
 
-async function ensureLabelsExist(c, labels: Label[]): Promise<number[]> {
+async function ensureLabelsExist(db: DB, labels: Label[]): Promise<number[]> {
   const { existing: existingLabels = [], new: newLabels = [] } = Object.groupBy(
     labels,
     (l) => (l.id ? "existing" : "new"),
@@ -49,7 +59,7 @@ async function ensureLabelsExist(c, labels: Label[]): Promise<number[]> {
 
   const createdLabels =
     newLabels.length > 0
-      ? await db(c.env)
+      ? await db
           .insert(label)
           .values(newLabels)
           .returning({ id: label.id })
@@ -62,9 +72,9 @@ api.post("/worklog", async (c) => {
   const newWorklog = await c.req.json();
 
   try {
-    const labelIds = await ensureLabelsExist(c, newWorklog.labels);
+    const labelIds = await ensureLabelsExist(c.var.db, newWorklog.labels);
 
-    const [inserted] = await db(c.env)
+    const [inserted] = await c.var.db
       .insert(worklog)
       .values({
         time: new Date(newWorklog.time),
