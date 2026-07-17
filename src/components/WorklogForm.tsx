@@ -93,11 +93,12 @@ export function WorklogForm(props: WorkLogFormProps) {
             />
           </Show>
         </li>
+        <li><button type="submit" disabled={submitting()}>
+          {submitting() ? "Saving..." : "Log Work"}
+        </button></li>
       </ul>
 
-      <button type="submit" disabled={submitting()}>
-        {submitting() ? "Saving..." : "Submit"}
-      </button>
+
     </form>
   );
 }
