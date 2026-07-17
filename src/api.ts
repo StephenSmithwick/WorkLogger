@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import { db } from "@/db";
 import { eq, sql } from "drizzle-orm";
 import { label, worklog, worklog_label } from "@/schema";
+import { relations } from "../drizzle/relations";
 
 type DB = ReturnType<typeof db>;
 type Label = typeof label.$inferInsert;
@@ -29,21 +30,9 @@ api.get("/label", async (c) => {
 
 api.get("/worklog", async (c) => {
   try {
-    const result = await c.var.db
-      .select({
-        id: worklog.id,
-        name: worklog.name,
-        notes: worklog.notes,
-        time: worklog.time,
-        duration: worklog.duration,
-        labels: sql<
-          Label[]
-        >`JSON_AGG(JSON_BUILD_OBJECT('name', ${label.name}))`,
-      })
-      .from(worklog)
-      .leftJoin(worklog_label, eq(worklog.id, worklog_label.worklogId))
-      .leftJoin(label, eq(worklog_label.labelId, label.id))
-      .groupBy(worklog.id);
+    const result = await c.var.db.query.worklog.findMany({
+      with: { labels: { columns: { name: true, id: true } } },
+    });
     return c.json(result);
   } catch (error) {
     console.error("Database query failed:", error);
@@ -51,22 +40,6 @@ api.get("/worklog", async (c) => {
   }
 });
 
-async function ensureLabelsExist(db: DB, labels: Label[]): Promise<number[]> {
-  const { existing: existingLabels = [], new: newLabels = [] } = Object.groupBy(
-    labels,
-    (l) => (l.id ? "existing" : "new"),
-  );
-
-  const createdLabels =
-    newLabels.length > 0
-      ? await db
-          .insert(label)
-          .values(newLabels)
-          .returning({ id: label.id })
-      : [];
-
-  return [...existingLabels, ...createdLabels].map((label) => label.id!);
-}
 
 api.post("/worklog", async (c) => {
   const newWorklog = await c.req.json();
@@ -99,5 +72,22 @@ api.post("/worklog", async (c) => {
     return c.text("Failed to save worklog entry", 500);
   }
 });
+
+async function ensureLabelsExist(db: DB, labels: Label[]): Promise<number[]> {
+  const { existing: existingLabels = [], new: newLabels = [] } = Object.groupBy(
+    labels,
+    (l) => (l.id ? "existing" : "new"),
+  );
+
+  const createdLabels =
+    newLabels.length > 0
+      ? await db
+          .insert(label)
+          .values(newLabels)
+          .returning({ id: label.id })
+      : [];
+
+  return [...existingLabels, ...createdLabels].map((label) => label.id!);
+}
 
 export type AppType = typeof api;
