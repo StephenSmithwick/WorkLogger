@@ -53,7 +53,7 @@ export function WorklogForm(props: WorkLogFormProps) {
   return (
     <form onSubmit={handleSubmit}>
       {error() && <p class="error">{error()}</p>}
-      <ul>
+      <ul class="worklogForm">
         <li class="time">
           <input
             type="datetime-local"

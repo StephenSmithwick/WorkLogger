@@ -1,33 +1,8 @@
 import { createResource } from "solid-js";
 import { WorklogForm } from "@/components/WorklogForm";
+import { Worklog } from "@/components/Worklog";
 import { useApi } from "@/App";
 import { For, Show, Suspense } from "solid-js";
-import { isServer } from "solid-js/web";
-
-interface WorklogProps {
-  worklog: {
-    time: string;
-    duration: string;
-    name: string;
-    notes: string;
-    labels: { name: string }[];
-  };
-}
-function Worklog({ worklog: wl }: WorklogProps) {
-  return (
-    <li>
-      <ul>
-        <li class="time">{wl.time}</li>
-        <li class="duration">{wl.duration}</li>
-        <li class="name">{wl.name}</li>
-        <li class="notes">{wl.notes}</li>
-        <li class="labels">
-          <For each={wl.labels}>{(label) => <span>{label.name}</span>}</For>
-        </li>
-      </ul>
-    </li>
-  );
-}
 
 export default function Worklogs() {
   const api = useApi();
@@ -52,7 +27,7 @@ export default function Worklogs() {
           when={!worklog.error}
           fallback={<li>{`Error: ${worklog.error?.message}`}</li>}
         >
-          <For each={worklog()}>{(wl) => <Worklog worklog={wl} />}</For>
+          <For each={worklog()}>{(wl) => <Worklog worklog={wl} onSubmitted={refetchWorklog}/>}</For>
         </Show>
       </Suspense>
       <li>

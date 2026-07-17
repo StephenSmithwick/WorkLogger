@@ -35,6 +35,15 @@ api.get("/worklog", async (c) => {
   return c.json(result);
 });
 
+api.delete("/worklog", async (c) => {
+  const {id} = await c.req.json();
+  const deletedWorklogLabel = await c.var.db.delete(worklog_label)
+    .where(eq(worklog_label.worklogId, id));
+  const deletedWorklog = await c.var.db.delete(worklog)
+    .where(eq(worklog.id, id))
+    .returning();
+  return c.json(deletedWorklog);
+});
 
 api.post("/worklog", async (c) => {
   const newWorklog = await c.req.json();
