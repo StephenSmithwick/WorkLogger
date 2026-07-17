@@ -18,59 +18,48 @@ api.use("*", async (c, next) => {
   await next();
 });
 
+api.onError((err, c) => {
+  console.error("Database query failed:", err);
+  return c.text("Failed to connect to database", 500);
+});
+
 api.get("/label", async (c) => {
-  try {
-    const result = await c.var.db.select().from(label);
-    return c.json(result);
-  } catch (error) {
-    console.error("Database query failed:", error);
-    return c.text("Failed to connect to database", 500);
-  }
+  const result = await c.var.db.select().from(label);
+  return c.json(result);
 });
 
 api.get("/worklog", async (c) => {
-  try {
-    const result = await c.var.db.query.worklog.findMany({
-      with: { labels: { columns: { name: true, id: true } } },
-    });
-    return c.json(result);
-  } catch (error) {
-    console.error("Database query failed:", error);
-    return c.text("Failed to connect to database", 500);
-  }
+  const result = await c.var.db.query.worklog.findMany({
+    with: { labels: { columns: { name: true, id: true } } },
+  });
+  return c.json(result);
 });
 
 
 api.post("/worklog", async (c) => {
   const newWorklog = await c.req.json();
+  const labelIds = await ensureLabelsExist(c.var.db, newWorklog.labels);
 
-  try {
-    const labelIds = await ensureLabelsExist(c.var.db, newWorklog.labels);
+  const [inserted] = await c.var.db
+    .insert(worklog)
+    .values({
+      time: new Date(newWorklog.time),
+      duration: newWorklog.duration,
+      name: newWorklog.name,
+      notes: newWorklog.notes,
+    })
+    .returning();
 
-    const [inserted] = await c.var.db
-      .insert(worklog)
-      .values({
-        time: new Date(newWorklog.time),
-        duration: newWorklog.duration,
-        name: newWorklog.name,
-        notes: newWorklog.notes,
-      })
-      .returning();
-
-    if (labelIds.length > 0) {
-      const worklogId = inserted.id;
-      const labelsConnections: WorklogLabel[] = labelIds.map((labelId) => ({
-        worklogId,
-        labelId,
-      }));
-      await db(c.env).insert(worklog_label).values(labelsConnections);
-    }
-
-    return c.json({ success: true, worklog: inserted });
-  } catch (error) {
-    console.error("Database query failed:", error);
-    return c.text("Failed to save worklog entry", 500);
+  if (labelIds.length > 0) {
+    const worklogId = inserted.id;
+    const labelsConnections: WorklogLabel[] = labelIds.map((labelId) => ({
+      worklogId,
+      labelId,
+    }));
+    await db(c.env).insert(worklog_label).values(labelsConnections);
   }
+
+  return c.json({ success: true, worklog: inserted });
 });
 
 async function ensureLabelsExist(db: DB, labels: Label[]): Promise<number[]> {

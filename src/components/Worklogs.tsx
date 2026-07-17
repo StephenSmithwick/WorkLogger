@@ -24,7 +24,6 @@ function Worklog({ worklog: wl }: WorklogProps) {
         <li class="labels">
           <For each={wl.labels}>{(label) => <span>{label.name}</span>}</For>
         </li>
-        {isServer ? <li>Server</li> : <li>Browser</li>}
       </ul>
     </li>
   );
