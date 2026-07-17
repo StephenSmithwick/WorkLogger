@@ -1,33 +1,31 @@
 # Worklogger
 Allows the logging of daily work
 
-This is a hono, solidjs, drizzle, neon Single page application with serverside rendering.
+This is a hono, solidjs, drizzle, neon Single page application with serverside rendering with cloudflare as the deployment target.
 
-## Getting Started
-Running locally:
-```
-pnpm install
+## Running Locally
+After installing the dependencies (`pnpm install`) you can start the dev server with:
+```zsh
 pnpm dev
 ```
 
-Deploying to Cloudflare
+## Deploying to Cloudflare
+
+Before deploying to cloudflare you may want to preview it locally using
+
+```zsh
+pnpm run preview
 ```
+
+```zsh
 pnpm run deploy
 ```
 
-
-## Cloudflare
-[For generating/synchronizing types based on your Worker configuration run](https://developers.cloudflare.com/workers/wrangler/commands/#types):
+## Updating cloudflare properties (`c`)
+To re-generate typescript types for cloudflare parameters:
 
 ```txt
 pnpm run cf-typegen
-```
-
-Pass the `CloudflareBindings` as generics when instantiation `Hono`:
-
-```ts
-// src/index.ts
-const app = new Hono<{ Bindings: CloudflareBindings }>()
 ```
 
 - [latest](https://worklogger.worklogger.workers.dev)
