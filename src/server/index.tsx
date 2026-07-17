@@ -7,7 +7,7 @@ import { api, AppType } from "@/api";
 import { hc } from "hono/client";
 import { appHtml } from "@/App";
 
-const app = new Hono();
+const app = new Hono<{ Bindings: CloudflareBindings }>();
 app.route("/", api);
 app.use(renderer);
 

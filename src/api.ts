@@ -3,10 +3,9 @@ import { db } from "@/db";
 import { eq, sql } from "drizzle-orm";
 import { label, worklog, worklog_label } from "@/schema";
 
-type Bindings = {
-  DATABASE_URL: string;
-};
-export const api = new Hono<{ Bindings: Bindings }>();
+export const api = new Hono<{ Bindings: CloudflareBindings }>()
+type Label = typeof label.$inferInsert;
+type WorklogLabel = typeof worklog_label.$inferInsert;
 
 api.get("/label", async (c) => {
   try {
