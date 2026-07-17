@@ -24,6 +24,5 @@ export default app.get("/", async (c) => {
         c.executionCtx,
       ),
   });
-  console.log("Here");
   return c.render(<div id="root">{raw(await appHtml(apiClient))}</div>);
 });
