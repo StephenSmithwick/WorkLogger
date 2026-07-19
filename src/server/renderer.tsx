@@ -9,6 +9,7 @@ export const renderer = jsxRenderer(({ children }) => (
   <html>
     <head>
       <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       <title>Worklogger</title>
       {raw(generateHydrationScript())}
       <ViteClient />
