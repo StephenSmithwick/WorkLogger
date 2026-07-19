@@ -65,7 +65,7 @@ api.post("/worklog", async (c) => {
       worklogId,
       labelId,
     }));
-    await db(c.env).insert(worklog_label).values(labelsConnections);
+    await c.var.db.insert(worklog_label).values(labelsConnections);
   }
 
   return c.json({ success: true, worklog: inserted });

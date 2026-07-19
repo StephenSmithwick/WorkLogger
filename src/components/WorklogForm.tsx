@@ -75,7 +75,7 @@ export function WorklogForm(props: WorkLogFormProps) {
           <input
             type="datetime-local"
             value={form.time}
-            onInput={(e) => setForm("time", e.currentTarget.value)}
+            onInput={(e) => setForm("time", new Date(e.currentTarget.value).toISOString())}
           />
         </li>
         <li class="duration">
