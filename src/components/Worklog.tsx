@@ -13,13 +13,14 @@ interface WorklogProps {
 }
 
 export const Worklog = ({ worklog: wl, onSubmitted }: WorklogProps) => {
+  const date = new Date(wl.time);
   return (
     <li>
       <ul class="worklog">
-        <li class="time">{wl.time}</li>
-        <li class="duration">{wl.duration}</li>
         <li class="name">{wl.name}</li>
         <li class="notes">{wl.notes}</li>
+        <li class="duration">{wl.duration}</li>
+        <li class="time">{date.toLocaleDateString()} {date.toLocaleTimeString()}</li>
         <li class="labels">
           <For each={wl.labels}>{(label) => <span>{label.name}</span>}</For>
         </li>

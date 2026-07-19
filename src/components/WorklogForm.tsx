@@ -2,6 +2,7 @@ import { createSignal, onMount, Show } from "solid-js";
 import { useApi } from "@/App";
 import { createStore } from "solid-js/store";
 import { Select, createOptions } from "@thisbeyond/solid-select";
+import "@thisbeyond/solid-select/style.css";
 
 interface WorkLogFormProps {
   labels: () => { id: number; name: string }[];
@@ -54,20 +55,6 @@ export function WorklogForm(props: WorkLogFormProps) {
     <form onSubmit={handleSubmit}>
       {error() && <p class="error">{error()}</p>}
       <ul class="worklogForm">
-        <li class="time">
-          <input
-            type="datetime-local"
-            value={form.time}
-            onInput={(e) => setForm("time", e.currentTarget.value)}
-          />
-        </li>
-        <li class="duration">
-          <input
-            type="text"
-            value={form.duration}
-            onInput={(e) => setForm("duration", e.currentTarget.value)}
-          />
-        </li>
         <li class="name">
           <input
             value={form.name}
@@ -83,6 +70,20 @@ export function WorklogForm(props: WorkLogFormProps) {
           >
             {form.notes}
           </textarea>
+        </li>
+        <li class="time">
+          <input
+            type="datetime-local"
+            value={form.time}
+            onInput={(e) => setForm("time", e.currentTarget.value)}
+          />
+        </li>
+        <li class="duration">
+          <input
+            type="text"
+            value={form.duration}
+            onInput={(e) => setForm("duration", e.currentTarget.value)}
+          />
         </li>
         <li class="labels">
           <Show when={mounted()}>

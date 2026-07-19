@@ -14,5 +14,5 @@ export function DeleteWorklog(props: {
     return await res.json();
   };
 
-  return <button class="delete" onClick={() => deleteWorklog(props.id)}>❌</button>;
+  return <button class="delete" onClick={() => deleteWorklog(props.id)}>☒</button>;
 }
