@@ -37,7 +37,10 @@ export function WorklogForm(props: WorkLogFormProps) {
     setSubmitting(true);
     try {
       const res = await api.worklog.$post({
-        json: form,
+        json: {
+          ...form,
+          time: new Date(form.time).toISOString(),
+        },
       });
       if (!res.ok) throw new Error("Failed to save worklog entry");
 
@@ -75,7 +78,7 @@ export function WorklogForm(props: WorkLogFormProps) {
           <input
             type="datetime-local"
             value={form.time}
-            onInput={(e) => setForm("time", new Date(e.currentTarget.value).toISOString())}
+            onInput={(e) => setForm("time", e.currentTarget.value)}
           />
         </li>
         <li class="duration">

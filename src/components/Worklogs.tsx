@@ -50,7 +50,7 @@ export default function Worklogs(props : WorklogsProps) {
           <For each={worklog()}>{(wl) => <Worklog worklog={wl} onSubmitted={refetchWorklog}/>}</For>
         </Show>
       </Suspense>
-      <li>
+      <li class="forms">
         <WorklogForm
           labels={labels}
           onLabelsCreated={refetchLabels}

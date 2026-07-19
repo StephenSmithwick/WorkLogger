@@ -50,6 +50,12 @@ body {
   margin-bottom: 1em;
 }
 
+.forms {
+  position: sticky;
+  bottom: var(--spacing-sm);
+  z-index: 1000;
+}
+
 .worklog, .worklogForm {
   list-style: none;
   padding: var(--spacing-md);
