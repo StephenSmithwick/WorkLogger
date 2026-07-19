@@ -29,7 +29,15 @@ api.get("/label", async (c) => {
 });
 
 api.get("/worklog", async (c) => {
+  const from = c.req.query("from");
+  const to = c.req.query("to");
+
   const result = await c.var.db.query.worklog.findMany({
+    where: (from || to) ? {
+      time: {
+        gte: from ? new Date(from) : undefined,
+        lte: to ? new Date(to) : undefined }
+    } : undefined,
     with: { labels: { columns: { name: true, id: true } } },
   });
   return c.json(result);

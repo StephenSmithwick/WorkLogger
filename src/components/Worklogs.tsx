@@ -4,11 +4,31 @@ import { Worklog } from "@/components/Worklog";
 import { useApi } from "@/App";
 import { For, Show, Suspense } from "solid-js";
 
-export default function Worklogs() {
+type WorklogsProps = {
+  day: () => string
+}
+
+function startOfDay(date: Date): Date {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0, 0);
+}
+
+function endOfDay(date: Date): Date {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate(), 23, 59, 59, 999);
+}
+
+export default function Worklogs(props : WorklogsProps) {
   const api = useApi();
+
   const [worklog, { refetch: refetchWorklog }] = createResource(
-    async () => {
-      const res = await api.worklog.$get();
+    () => props.day(),
+    async (day) => {
+      const date = new Date(day);
+      const res = await api.worklog.$get({
+        query: {
+          from: startOfDay(date).toISOString(),
+          to: endOfDay(date).toISOString(),
+        },
+      });
       return res.json();
     },
     { initialValue: [] },
