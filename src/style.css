@@ -140,8 +140,15 @@ button.delete:hover, button.delete:focus-visible {
   outline: none;
 }
 
+.worklogForm .expandable {
+    display: none;
+}
+.worklogForm.expanded .expandable {
+    display: unset;
+}
+
 .worklogForm input,
-.worklogForm textarea {
+.worklogForm.expanded textarea {
   width: 100%;
   padding: 0.5rem;
   border: 1px solid var(--border-color);
@@ -150,12 +157,11 @@ button.delete:hover, button.delete:focus-visible {
   font-size: 1rem;
 }
 
-.worklogForm textarea {
+.worklogForm.expanded textarea {
   resize: vertical;
 }
 
-.worklogForm button[type="submit"] {
-  width: 100%;
+.worklogForm button {
   padding: 0.75rem;
   background-color: var(--accent-color);
   color: white;
@@ -168,8 +174,16 @@ button.delete:hover, button.delete:focus-visible {
   margin-top: var(--spacing-sm);
 }
 
-.worklogForm button[type="submit"]:hover {
+.worklogForm button:hover {
   opacity: 0.9;
+}
+
+.worklogForm button + button {
+  margin-left: 0.5em;
+}
+
+.worklogForm button[type="submit"] {
+  width: calc(100% - 3em);
 }
 
 @media (min-width: 640px) {
@@ -218,10 +232,18 @@ button.delete:hover, button.delete:focus-visible {
   .worklogForm {
     grid-template-columns: 1fr 1fr;
     grid-template-areas:
+      "action action";
+    align-items: center;
+    column-gap: 1rem;
+  }
+
+  .worklogForm.expanded {
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas:
       "name name"
       "time duration"
       "notes notes"
-      "labels submit";
+      "labels action";
     align-items: center;
     column-gap: 1rem;
   }
@@ -230,10 +252,6 @@ button.delete:hover, button.delete:focus-visible {
   .worklogForm .time { grid-area: time; }
   .worklogForm .duration { grid-area: duration; }
   .worklogForm .notes { grid-area: notes; }
-  .worklogForm .labels { grid-area: labels; }
-
-  .worklogForm li:last-child {
-    grid-area: submit;
-    margin-top: 0;
-  }
+  .worklogForm .labels { grid-area: labels; margin-top: 0; }
+  .worklogForm .action { grid-area: action; margin-top: 0; }
 }

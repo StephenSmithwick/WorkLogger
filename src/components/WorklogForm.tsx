@@ -15,6 +15,8 @@ export function WorklogForm(props: WorkLogFormProps) {
   const [mounted, setMounted] = createSignal(false);
   onMount(() => setMounted(true));
 
+  const [expanded, setExpanded] = createSignal(false);
+
   const [form, setForm] = createStore({
     time: "",
     duration: "",
@@ -35,12 +37,10 @@ export function WorklogForm(props: WorkLogFormProps) {
     e.preventDefault();
     setError(null);
     setSubmitting(true);
+    form.time = Date.parse(form.time)?.toISOString() ?? new Date().toISOString();
     try {
       const res = await api.worklog.$post({
-        json: {
-          ...form,
-          time: new Date(form.time).toISOString(),
-        },
+        json: form,
       });
       if (!res.ok) throw new Error("Failed to save worklog entry");
 
@@ -57,14 +57,14 @@ export function WorklogForm(props: WorkLogFormProps) {
   return (
     <form onSubmit={handleSubmit}>
       {error() && <p class="error">{error()}</p>}
-      <ul class="worklogForm">
-        <li class="name">
+      <ul class="worklogForm" classList={{"expanded": expanded()}}>
+        <li class="name expandable">
           <input
             value={form.name}
             onInput={(e) => setForm("name", e.currentTarget.value)}
           />
         </li>
-        <li class="notes">
+        <li class="notes expandable">
           <textarea
             rows="5"
             cols="40"
@@ -74,21 +74,21 @@ export function WorklogForm(props: WorkLogFormProps) {
             {form.notes}
           </textarea>
         </li>
-        <li class="time">
+        <li class="time expandable">
           <input
             type="datetime-local"
             value={form.time}
             onInput={(e) => setForm("time", e.currentTarget.value)}
           />
         </li>
-        <li class="duration">
+        <li class="duration expandable">
           <input
             type="text"
             value={form.duration}
             onInput={(e) => setForm("duration", e.currentTarget.value)}
           />
         </li>
-        <li class="labels">
+        <li class="labels expandable">
           <Show when={mounted()}>
             <Select
               multiple
@@ -97,12 +97,16 @@ export function WorklogForm(props: WorkLogFormProps) {
             />
           </Show>
         </li>
-        <li><button type="submit" disabled={submitting()}>
-          {submitting() ? "Saving..." : "Log Work"}
-        </button></li>
+        <li class="action">
+          <button type="submit" disabled={submitting()}>
+            {submitting() ? "Saving..." : "Log Work"}
+          </button>
+          <button type="button" class="expand"
+            onclick={() => setExpanded(prev => !prev)}>
+            {expanded() ? "↓" : "↑" }
+          </button>
+        </li>
       </ul>
-
-
     </form>
   );
 }
