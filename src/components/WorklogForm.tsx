@@ -116,7 +116,7 @@ export function WorklogForm(props: WorkLogFormProps) {
             class="expand"
             onclick={() => setExpanded((prev) => !prev)}
           >
-            {expanded() ? "↓" : "↑"}
+            {expanded() ? "↓" : "Log Work ↑"}
           </button>
         </li>
       </ul>
