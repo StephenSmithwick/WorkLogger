@@ -4,7 +4,7 @@
     "module": "ESNext",
     "moduleResolution": "Bundler",
     "strict": true,
-    "lib": ["DOM", "DOM.Iterable", "ESNext"],
+    "lib": ["DOM", "DOM.Iterable", "ESNext", "esnext.temporal"],
     "types": ["vite/client"],
     "jsx": "preserve",
     "jsxImportSource": "solid-js",

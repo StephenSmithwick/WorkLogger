@@ -33,21 +33,25 @@ api.get("/worklog", async (c) => {
   const to = c.req.query("to");
 
   const result = await c.var.db.query.worklog.findMany({
-    where: (from || to) ? {
-      time: {
-        gte: from ? new Date(from) : undefined,
-        lte: to ? new Date(to) : undefined }
-    } : undefined,
+    where:
+      from || to
+        ? {
+            time: {
+              gte: from ? new Date(from) : undefined,
+              lte: to ? new Date(to) : undefined,
+            },
+          }
+        : undefined,
     with: { labels: { columns: { name: true, id: true } } },
   });
   return c.json(result);
 });
 
 api.delete("/worklog", async (c) => {
-  const {id} = await c.req.json();
-  const deletedWorklogLabel = await c.var.db.delete(worklog_label)
-    .where(eq(worklog_label.worklogId, id));
-  const deletedWorklog = await c.var.db.delete(worklog)
+  const { id } = await c.req.json();
+  await c.var.db.delete(worklog_label).where(eq(worklog_label.worklogId, id));
+  const deletedWorklog = await c.var.db
+    .delete(worklog)
     .where(eq(worklog.id, id))
     .returning();
   return c.json(deletedWorklog);
@@ -87,10 +91,7 @@ async function ensureLabelsExist(db: DB, labels: Label[]): Promise<number[]> {
 
   const createdLabels =
     newLabels.length > 0
-      ? await db
-          .insert(label)
-          .values(newLabels)
-          .returning({ id: label.id })
+      ? await db.insert(label).values(newLabels).returning({ id: label.id })
       : [];
 
   return [...existingLabels, ...createdLabels].map((label) => label.id!);

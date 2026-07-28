@@ -1,18 +1,19 @@
-import { useApi } from "@/App";
+import { context } from "@/App";
 
-export function DeleteWorklog(props: {
-  id: number,
-  onSubmitted: () => void;
-}) {
-  const api = useApi();
+export function DeleteWorklog(props: { id: number; onSubmitted: () => void }) {
+  const { api } = context();
 
   const deleteWorklog = async (id: number) => {
     console.log("Deleting", { id });
-    const res = await api.worklog.$delete({ json: {id} });
+    const res = await api.worklog.$delete({ json: { id } });
     if (!res.ok) throw new Error("Failed to delete worklog entry");
     props.onSubmitted();
     return await res.json();
   };
 
-  return <button class="delete" onClick={() => deleteWorklog(props.id)}>☒</button>;
+  return (
+    <button class="delete" onClick={() => deleteWorklog(props.id)}>
+      ☒
+    </button>
+  );
 }

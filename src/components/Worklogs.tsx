@@ -1,32 +1,24 @@
 import { createResource } from "solid-js";
 import { WorklogForm } from "@/components/WorklogForm";
 import { Worklog } from "@/components/Worklog";
-import { useApi } from "@/App";
+import { context } from "@/App";
 import { For, Show, Suspense } from "solid-js";
 
 type WorklogsProps = {
-  day: () => string
-}
+  from: () => string;
+  to: () => string;
+};
 
-function startOfDay(date: Date): Date {
-  return new Date(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0, 0);
-}
-
-function endOfDay(date: Date): Date {
-  return new Date(date.getFullYear(), date.getMonth(), date.getDate(), 23, 59, 59, 999);
-}
-
-export default function Worklogs(props : WorklogsProps) {
-  const api = useApi();
+export default function Worklogs({ from, to }: WorklogsProps) {
+  const { api } = context();
 
   const [worklog, { refetch: refetchWorklog }] = createResource(
-    () => props.day(),
-    async (day) => {
-      const date = new Date(day);
+    () => ({ from: from(), to: to() }),
+    async (range) => {
       const res = await api.worklog.$get({
         query: {
-          from: startOfDay(date).toISOString(),
-          to: endOfDay(date).toISOString(),
+          from: range.from,
+          to: range.to,
         },
       });
       return res.json();
@@ -47,7 +39,9 @@ export default function Worklogs(props : WorklogsProps) {
           when={!worklog.error}
           fallback={<li>{`Error: ${worklog.error?.message}`}</li>}
         >
-          <For each={worklog()}>{(wl) => <Worklog worklog={wl} onSubmitted={refetchWorklog}/>}</For>
+          <For each={worklog()}>
+            {(wl) => <Worklog worklog={wl} onSubmitted={refetchWorklog} />}
+          </For>
         </Show>
       </Suspense>
       <li class="forms">

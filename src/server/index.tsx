@@ -6,13 +6,14 @@ import { renderer } from "./renderer";
 import { api, AppType } from "@/api";
 import { hc } from "hono/client";
 import { appHtml } from "@/App";
+import { getCookie } from "hono/cookie";
 
 const app = new Hono<{ Bindings: CloudflareBindings }>();
 app.route("/", api);
 app.use(renderer);
 
 export default app.get("/", async (c) => {
-  const apiClient = hc<AppType>("http://isServer", {
+  const client = hc<AppType>("http://isServer", {
     fetch: async (input: RequestInfo | URL, init?: RequestInit) =>
       api.request(
         input,
@@ -24,5 +25,8 @@ export default app.get("/", async (c) => {
         c.executionCtx,
       ),
   });
-  return c.render(<div id="root">{raw(await appHtml(apiClient))}</div>);
+  const timezone = getCookie(c, "timezone");
+  return c.render(
+    <div id="root">{raw(await appHtml({ timezone, client }))}</div>,
+  );
 });

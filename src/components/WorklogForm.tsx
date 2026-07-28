@@ -1,8 +1,9 @@
 import { createSignal, onMount, Show } from "solid-js";
-import { useApi } from "@/App";
+import { context } from "@/App";
 import { createStore } from "solid-js/store";
 import { Select, createOptions } from "@thisbeyond/solid-select";
 import "@thisbeyond/solid-select/style.css";
+import "temporal-polyfill/global";
 
 interface WorkLogFormProps {
   labels: () => { id: number; name: string }[];
@@ -10,7 +11,7 @@ interface WorkLogFormProps {
   onSubmitted: () => void;
 }
 export function WorklogForm(props: WorkLogFormProps) {
-  const api = useApi();
+  const { api, timezone } = context();
 
   const [mounted, setMounted] = createSignal(false);
   onMount(() => setMounted(true));
@@ -37,10 +38,14 @@ export function WorklogForm(props: WorkLogFormProps) {
     e.preventDefault();
     setError(null);
     setSubmitting(true);
-    form.time = Date.parse(form.time)?.toISOString() ?? new Date().toISOString();
     try {
       const res = await api.worklog.$post({
-        json: form,
+        json: {
+          ...form,
+          time: Temporal.PlainDateTime.from(form.time)
+            .toZonedDateTime(timezone)
+            .toString({ timeZoneName: "never" }),
+        },
       });
       if (!res.ok) throw new Error("Failed to save worklog entry");
 
@@ -57,7 +62,7 @@ export function WorklogForm(props: WorkLogFormProps) {
   return (
     <form onSubmit={handleSubmit}>
       {error() && <p class="error">{error()}</p>}
-      <ul class="worklogForm" classList={{"expanded": expanded()}}>
+      <ul class="worklogForm" classList={{ expanded: expanded() }}>
         <li class="name expandable">
           <input
             value={form.name}
@@ -101,9 +106,12 @@ export function WorklogForm(props: WorkLogFormProps) {
           <button type="submit" disabled={submitting()}>
             {submitting() ? "Saving..." : "Log Work"}
           </button>
-          <button type="button" class="expand"
-            onclick={() => setExpanded(prev => !prev)}>
-            {expanded() ? "↓" : "↑" }
+          <button
+            type="button"
+            class="expand"
+            onclick={() => setExpanded((prev) => !prev)}
+          >
+            {expanded() ? "↓" : "↑"}
           </button>
         </li>
       </ul>
