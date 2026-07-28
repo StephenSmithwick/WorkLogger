@@ -5,8 +5,12 @@ import { Select, createOptions } from "@thisbeyond/solid-select";
 import "@thisbeyond/solid-select/style.css";
 import "temporal-polyfill/global";
 
+interface Label {
+  id: number;
+  name: string;
+}
 interface WorkLogFormProps {
-  labels: () => { id: number; name: string }[];
+  labels: () => Label[];
   onLabelsCreated: () => void;
   onSubmitted: () => void;
 }
@@ -29,9 +33,10 @@ export function WorklogForm(props: WorkLogFormProps) {
   const [error, setError] = createSignal<string | null>(null);
 
   const selectProps = createOptions(() => props.labels().map((l) => l), {
-    extractText: (label) => label.name,
-    createable: (name) => ({ name }),
-    format: (label) => <span>{label.name}</span>,
+    extractText: (label: Label) => label.name,
+    createable: (name: string, exists: boolean) =>
+      exists ? undefined : { name },
+    format: (label: Label) => <span>{label.name}</span>,
   });
 
   async function handleSubmit(e: SubmitEvent) {
