@@ -25,6 +25,7 @@ export default app.get("/", async (c) => {
         c.executionCtx,
       ),
   });
+  // TODO: consider using c.req.raw.cf?.timezone
   const timezone = getCookie(c, "timezone");
   return c.render(
     <div id="root">{raw(await appHtml({ timezone, client }))}</div>,
