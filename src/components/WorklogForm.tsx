@@ -1,36 +1,54 @@
-import { createSignal, onMount, Show } from "solid-js";
+import { createSignal, createEffect, onMount, Show } from "solid-js";
 import { context } from "@/App";
 import { createStore } from "solid-js/store";
 import { Select, createOptions } from "@thisbeyond/solid-select";
 import "@thisbeyond/solid-select/style.css";
-import "temporal-polyfill/global";
+import { WorklogResponse, Label } from "@/api";
 
-interface Label {
-  id: number;
-  name: string;
-}
 interface WorkLogFormProps {
+  worklog: () => undefined | WorklogResponse;
   labels: () => Label[];
   onLabelsCreated: () => void;
   onSubmitted: () => void;
+  expanded: () => boolean;
+  setExpanded: (_: boolean) => void;
 }
+
+const DEFAULT_WORKLOG = {
+  id: NaN,
+  time: "",
+  duration: "1 hour",
+  name: "",
+  notes: "",
+  labels: [] as Label[],
+};
+
+const toISOTime = (time: string) => new Date(time).toISOString();
+const toLocalTime = (time: string, timezone: string) =>
+  new Date(time)
+    .toTemporalInstant()
+    .toZonedDateTimeISO(timezone)
+    .toString({ offset: "never", timeZoneName: "never" });
+
 export function WorklogForm(props: WorkLogFormProps) {
   const { api, timezone } = context();
 
   const [mounted, setMounted] = createSignal(false);
   onMount(() => setMounted(true));
 
-  const [expanded, setExpanded] = createSignal(false);
-
-  const [form, setForm] = createStore({
-    time: "",
-    duration: "",
-    name: "",
-    notes: "",
-    labels: [] as string[],
-  });
+  const { expanded, setExpanded } = props;
   const [submitting, setSubmitting] = createSignal(false);
   const [error, setError] = createSignal<string | null>(null);
+  const [state, setState] = createStore<WorklogResponse>(DEFAULT_WORKLOG);
+
+  createEffect(() => {
+    const target = props.worklog();
+    if (!target) return;
+    setState({
+      ...target,
+      time: toISOTime(target.time),
+    });
+  });
 
   const selectProps = createOptions(() => props.labels().map((l) => l), {
     extractText: (label: Label) => label.name,
@@ -46,15 +64,13 @@ export function WorklogForm(props: WorkLogFormProps) {
     try {
       const res = await api.worklog.$post({
         json: {
-          ...form,
-          time: Temporal.PlainDateTime.from(form.time)
-            .toZonedDateTime(timezone)
-            .toString({ timeZoneName: "never" }),
+          ...state,
+          time: toISOTime(state.time),
         },
       });
       if (!res.ok) throw new Error("Failed to save worklog entry");
 
-      setForm({ time: "", duration: "", name: "", notes: "", labels: [] });
+      setState({ ...DEFAULT_WORKLOG });
       props.onSubmitted();
     } catch (err) {
       // TODO: Can probably recreate this using an <ErrorBoundary>
@@ -70,8 +86,22 @@ export function WorklogForm(props: WorkLogFormProps) {
       <ul class="worklogForm" classList={{ expanded: expanded() }}>
         <li class="name expandable">
           <input
-            value={form.name}
-            onInput={(e) => setForm("name", e.currentTarget.value)}
+            value={state.name}
+            onInput={(e) => setState("name", e.currentTarget.value)}
+          />
+        </li>
+        <li class="time expandable">
+          <input
+            type="datetime-local"
+            value={state.time && toLocalTime(state.time, timezone)}
+            onInput={(e) => setState("time", toISOTime(e.currentTarget.value))}
+          />
+        </li>
+        <li class="duration expandable">
+          <input
+            type="text"
+            value={state.duration ?? ""}
+            onInput={(e) => setState("duration", e.currentTarget.value)}
           />
         </li>
         <li class="notes expandable">
@@ -79,23 +109,8 @@ export function WorklogForm(props: WorkLogFormProps) {
             rows="5"
             cols="40"
             placeholder="Notes..."
-            onInput={(e) => setForm("notes", e.currentTarget.value)}
-          >
-            {form.notes}
-          </textarea>
-        </li>
-        <li class="time expandable">
-          <input
-            type="datetime-local"
-            value={form.time}
-            onInput={(e) => setForm("time", e.currentTarget.value)}
-          />
-        </li>
-        <li class="duration expandable">
-          <input
-            type="text"
-            value={form.duration}
-            onInput={(e) => setForm("duration", e.currentTarget.value)}
+            onInput={(e) => setState("notes", e.currentTarget.value)}
+            value={state.notes ?? ""}
           />
         </li>
         <li class="labels expandable">
@@ -103,7 +118,8 @@ export function WorklogForm(props: WorkLogFormProps) {
             <Select
               multiple
               {...selectProps}
-              onChange={(selected: string[]) => setForm("labels", selected)}
+              initialValue={state.labels}
+              onChange={(selected: Label[]) => setState("labels", selected)}
             />
           </Show>
         </li>

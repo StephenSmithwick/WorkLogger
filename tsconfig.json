@@ -2,9 +2,9 @@
   "compilerOptions": {
     "target": "ESNext",
     "module": "ESNext",
-    "moduleResolution": "Bundler",
+    "moduleResolution": "bundler",
     "strict": true,
-    "lib": ["DOM", "DOM.Iterable", "ESNext", "esnext.temporal"],
+    "lib": ["DOM", "DOM.Iterable", "ESNext"],
     "types": ["vite/client"],
     "jsx": "preserve",
     "jsxImportSource": "solid-js",

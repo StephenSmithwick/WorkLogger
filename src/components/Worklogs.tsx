@@ -1,8 +1,9 @@
-import { createResource } from "solid-js";
+import { createResource, createSignal } from "solid-js";
 import { WorklogForm } from "@/components/WorklogForm";
 import { Worklog } from "@/components/Worklog";
 import { context } from "@/App";
 import { For, Show, Suspense } from "solid-js";
+import { WorklogResponse } from "@/api";
 
 type WorklogsProps = {
   from: () => string;
@@ -32,6 +33,17 @@ export default function Worklogs({ from, to }: WorklogsProps) {
     },
     { initialValue: [] },
   );
+
+  const [editingWorklog, setEditingWorklog] = createSignal<WorklogResponse>();
+  const [formExpanded, setFormExpanded] = createSignal(false);
+
+  function select(wl: WorklogResponse) {
+    return () => {
+      setFormExpanded(true);
+      setEditingWorklog(wl);
+    };
+  }
+
   return (
     <ul>
       <Suspense fallback={<li>Loading...</li>}>
@@ -40,15 +52,24 @@ export default function Worklogs({ from, to }: WorklogsProps) {
           fallback={<li>{`Error: ${worklog.error?.message}`}</li>}
         >
           <For each={worklog()}>
-            {(wl) => <Worklog worklog={wl} onSubmitted={refetchWorklog} />}
+            {(wl) => (
+              <Worklog
+                worklog={wl}
+                onDeleted={refetchWorklog}
+                onSelect={select(wl)}
+              />
+            )}
           </For>
         </Show>
       </Suspense>
       <li class="forms">
         <WorklogForm
+          worklog={editingWorklog}
           labels={labels}
           onLabelsCreated={refetchLabels}
           onSubmitted={refetchWorklog}
+          expanded={formExpanded}
+          setExpanded={setFormExpanded}
         />
       </li>
     </ul>

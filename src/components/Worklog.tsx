@@ -1,31 +1,38 @@
 import { DeleteWorklog } from "@/components/DeleteWorklog";
 import { For } from "solid-js";
+import { WorklogResponse } from "@/api";
 
 interface WorklogProps {
-  worklog: {
-    time: string;
-    duration: string;
-    name: string;
-    notes: string;
-    labels: { name: string }[];
-  };
-  onSubmitted: () => void;
+  worklog: WorklogResponse;
+  onDeleted: () => void;
+  onSelect: () => void;
 }
 
-export const Worklog = ({ worklog: wl, onSubmitted }: WorklogProps) => {
-  const date = new Date(wl.time);
+export const Worklog = ({ worklog, onDeleted, onSelect }: WorklogProps) => {
+  const date = new Date(worklog.time);
   return (
     <li>
       <ul class="worklog">
-        <li class="name">{wl.name}</li>
-        <li class="notes">{wl.notes}</li>
-        <li class="duration">{wl.duration}</li>
-        <li class="time">{date.toLocaleDateString()} {date.toLocaleTimeString()}</li>
-        <li class="labels">
-          <For each={wl.labels}>{(label) => <span>{label.name}</span>}</For>
+        <li class="name">
+          <button class="select" onClick={onSelect}>
+            ✎
+          </button>
+          {worklog.name}
         </li>
-        <li><DeleteWorklog id={wl.id} onSubmitted={onSubmitted}></DeleteWorklog></li>
+        <li class="notes">{worklog.notes}</li>
+        <li class="duration">{worklog.duration}</li>
+        <li class="time">
+          {date.toLocaleDateString()} {date.toLocaleTimeString()}
+        </li>
+        <li class="labels">
+          <For each={worklog.labels}>
+            {(label) => <span>{label.name}</span>}
+          </For>
+        </li>
+        <li>
+          <DeleteWorklog id={worklog.id} onDeleted={onDeleted}></DeleteWorklog>
+        </li>
       </ul>
     </li>
   );
-}
+};

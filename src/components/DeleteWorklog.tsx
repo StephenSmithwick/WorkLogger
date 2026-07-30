@@ -1,13 +1,12 @@
 import { context } from "@/App";
 
-export function DeleteWorklog(props: { id: number; onSubmitted: () => void }) {
+export function DeleteWorklog(props: { id: number; onDeleted: () => void }) {
   const { api } = context();
 
   const deleteWorklog = async (id: number) => {
-    console.log("Deleting", { id });
     const res = await api.worklog.$delete({ json: { id } });
     if (!res.ok) throw new Error("Failed to delete worklog entry");
-    props.onSubmitted();
+    props.onDeleted();
     return await res.json();
   };
 

@@ -5,6 +5,7 @@ import type { AppType } from "@/api";
 import { renderToStringAsync, Show } from "solid-js/web";
 import { Component, createSignal, createMemo } from "solid-js";
 import "temporal-polyfill/global";
+import "temporal-polyfill/types/global";
 
 export type ApiClient = ReturnType<typeof hc<AppType>>;
 interface Context {
@@ -51,17 +52,19 @@ const App: Component<AppProps> = ({ client, timezone }) => {
 };
 
 const TimezoneApp: Component<TimezoneAppProps> = ({ timezone, client }) => {
-  const today = () => Temporal.Now.plainDateISO(timezone);
-
-  const [selectedDay, setSelectedDay] = createSignal(today());
+  const [selectedDay, setSelectedDay] = createSignal(
+    Temporal.Now.plainDateISO(timezone).toString(),
+  );
   const from = createMemo(() =>
-    Temporal.PlainDate.from(selectedDay())
-      .toZonedDateTime(timezone)
+    new Date(selectedDay())
+      .toTemporalInstant()
+      .toZonedDateTimeISO(timezone)
       .toString({ timeZoneName: "never" }),
   );
   const to = createMemo(() =>
-    Temporal.PlainDate.from(selectedDay())
-      .toZonedDateTime(timezone)
+    new Date(selectedDay())
+      .toTemporalInstant()
+      .toZonedDateTimeISO(timezone)
       .add({ days: 1 })
       .toString({ timeZoneName: "never" }),
   );
