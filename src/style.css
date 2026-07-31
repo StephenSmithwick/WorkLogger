@@ -80,6 +80,23 @@ body {
     display: none;
 }
 
+.worklog button.edit {
+    margin-right: 1em;
+}
+
+.worklog.editing li:not(:first-child) {
+    display: none;
+}
+
+.worklog.editing li:first-child::after {
+    content: "editing";
+    background: var(--bg-color);
+    border-radius: 3px;
+    padding: 0em 0.5em;
+    border: 1px solid var(--text-main);
+    margin-left: 1em;
+}
+
 .worklog .name {
     font-size: 1.125rem;
     font-weight: 600;

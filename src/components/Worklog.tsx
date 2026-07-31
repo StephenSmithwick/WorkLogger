@@ -5,34 +5,33 @@ import { WorklogResponse } from "@/api";
 interface WorklogProps {
   worklog: WorklogResponse;
   onDeleted: () => void;
-  onSelect: () => void;
+  onEdit: () => void;
+  editing: boolean;
 }
 
-export const Worklog = ({ worklog, onDeleted, onSelect }: WorklogProps) => {
-  const date = new Date(worklog.time);
+export const Worklog = (props: WorklogProps) => {
+  const date = new Date(props.worklog.time);
   return (
-    <li>
-      <ul class="worklog">
-        <li class="name">
-          <button class="select" onClick={onSelect}>
-            ✎
-          </button>
-          {worklog.name}
-        </li>
-        <li class="notes">{worklog.notes}</li>
-        <li class="duration">{worklog.duration}</li>
-        <li class="time">
-          {date.toLocaleDateString()} {date.toLocaleTimeString()}
-        </li>
-        <li class="labels">
-          <For each={worklog.labels}>
-            {(label) => <span>{label.name}</span>}
-          </For>
-        </li>
-        <li>
-          <DeleteWorklog id={worklog.id} onDeleted={onDeleted}></DeleteWorklog>
-        </li>
-      </ul>
-    </li>
+    <ul class="worklog" classList={{ editing: props.editing }}>
+      <li class="name">
+        <button class="edit" onClick={props.onEdit}>
+          {props.editing ? "✕" : "✎"}
+        </button>
+        {props.worklog.name}
+      </li>
+      <li class="notes">{props.worklog.notes}</li>
+      <li class="duration">{props.worklog.duration}</li>
+      <li class="time">
+        {date.toLocaleDateString()} {date.toLocaleTimeString()}
+      </li>
+      <li class="labels">
+        <For each={props.worklog.labels}>
+          {(label) => <span>{label.name}</span>}
+        </For>
+      </li>
+      <li>
+        <DeleteWorklog id={props.worklog.id} onDeleted={props.onDeleted} />
+      </li>
+    </ul>
   );
 };

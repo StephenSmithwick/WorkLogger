@@ -37,10 +37,14 @@ export default function Worklogs({ from, to }: WorklogsProps) {
   const [editingWorklog, setEditingWorklog] = createSignal<WorklogResponse>();
   const [formExpanded, setFormExpanded] = createSignal(false);
 
-  function select(wl: WorklogResponse) {
+  function edit(wl: WorklogResponse) {
     return () => {
       setFormExpanded(true);
-      setEditingWorklog(wl);
+      if (wl.id === editingWorklog()?.id) {
+        setEditingWorklog(undefined);
+      } else {
+        setEditingWorklog(wl);
+      }
     };
   }
 
@@ -53,11 +57,14 @@ export default function Worklogs({ from, to }: WorklogsProps) {
         >
           <For each={worklog()}>
             {(wl) => (
-              <Worklog
-                worklog={wl}
-                onDeleted={refetchWorklog}
-                onSelect={select(wl)}
-              />
+              <li>
+                <Worklog
+                  worklog={wl}
+                  onDeleted={refetchWorklog}
+                  onEdit={edit(wl)}
+                  editing={wl.id === editingWorklog()?.id}
+                />
+              </li>
             )}
           </For>
         </Show>

@@ -14,14 +14,14 @@ interface WorkLogFormProps {
   setExpanded: (_: boolean) => void;
 }
 
-const DEFAULT_WORKLOG = {
+const defaultState = (): WorklogResponse => ({
   id: NaN,
   time: "",
   duration: "1 hour",
   name: "",
   notes: "",
-  labels: [] as Label[],
-};
+  labels: [],
+});
 
 const toISOTime = (time: string) => new Date(time).toISOString();
 const toLocalTime = (time: string, timezone: string) =>
@@ -39,14 +39,14 @@ export function WorklogForm(props: WorkLogFormProps) {
   const { expanded, setExpanded } = props;
   const [submitting, setSubmitting] = createSignal(false);
   const [error, setError] = createSignal<string | null>(null);
-  const [state, setState] = createStore<WorklogResponse>(DEFAULT_WORKLOG);
+  const [state, setState] = createStore<WorklogResponse>(defaultState());
 
   createEffect(() => {
     const target = props.worklog();
-    if (!target) return;
     setState({
+      ...defaultState(),
       ...target,
-      time: toISOTime(target.time),
+      time: target && toISOTime(target.time),
     });
   });
 
@@ -70,7 +70,7 @@ export function WorklogForm(props: WorkLogFormProps) {
       });
       if (!res.ok) throw new Error("Failed to save worklog entry");
 
-      setState({ ...DEFAULT_WORKLOG });
+      setState(defaultState());
       props.onSubmitted();
     } catch (err) {
       // TODO: Can probably recreate this using an <ErrorBoundary>
