@@ -4,8 +4,6 @@ import { createStore } from "solid-js/store";
 import { Select, createOptions } from "@thisbeyond/solid-select";
 import "@thisbeyond/solid-select/style.css";
 import { WorklogResponse, Label } from "@/api";
-import "temporal-polyfill/global";
-import "temporal-polyfill/types/global";
 
 interface WorkLogFormProps {
   worklog: () => undefined | WorklogResponse;
@@ -17,23 +15,11 @@ interface WorkLogFormProps {
 }
 
 export function WorklogForm(props: WorkLogFormProps) {
-  const { api, timezone } = context();
-  const toISOTime = (time: string) => new Date(time).toISOString();
-  const toLocalTime = (time: string) =>
-    new Date(time)
-      .toTemporalInstant()
-      .toZonedDateTimeISO(timezone)
-      .toString({ offset: "never", timeZoneName: "never" });
-  const now = () =>
-    Temporal.Now.zonedDateTimeISO(timezone)
-      .round({ smallestUnit: "minute" })
-      .toString({
-        offset: "never",
-        timeZoneName: "never",
-      });
+  const { api, time } = context();
+
   const defaultState = (): WorklogResponse => ({
     id: NaN,
-    time: now(),
+    time: time.now(),
     duration: "1 hour",
     name: "",
     notes: "",
@@ -70,7 +56,7 @@ export function WorklogForm(props: WorkLogFormProps) {
       const res = await api.worklog.$post({
         json: {
           ...state,
-          time: toISOTime(state.time),
+          time: time.toISOTime(state.time),
         },
       });
       if (!res.ok) throw new Error("Failed to save worklog entry");
@@ -98,8 +84,10 @@ export function WorklogForm(props: WorkLogFormProps) {
         <li class="time expandable">
           <input
             type="datetime-local"
-            value={state.time && toLocalTime(state.time)}
-            onInput={(e) => setState("time", toISOTime(e.currentTarget.value))}
+            value={state.time && time.toLocalTime(state.time)}
+            onInput={(e) =>
+              setState("time", time.toISOTime(e.currentTarget.value))
+            }
           />
         </li>
         <li class="duration expandable">

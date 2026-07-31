@@ -1,6 +1,7 @@
 import { DeleteWorklog } from "@/components/DeleteWorklog";
 import { For } from "solid-js";
 import { WorklogResponse } from "@/api";
+import { context } from "@/App";
 
 interface WorklogProps {
   worklog: WorklogResponse;
@@ -10,7 +11,8 @@ interface WorklogProps {
 }
 
 export const Worklog = (props: WorklogProps) => {
-  const date = new Date(props.worklog.time);
+  const { time } = context();
+  const worklogTime = time.toDisplayTime(props.worklog.time);
   return (
     <ul class="worklog" classList={{ editing: props.editing }}>
       <li class="name">
@@ -21,9 +23,7 @@ export const Worklog = (props: WorklogProps) => {
       </li>
       <li class="notes">{props.worklog.notes}</li>
       <li class="duration">{props.worklog.duration}</li>
-      <li class="time">
-        {date.toLocaleDateString()} {date.toLocaleTimeString()}
-      </li>
+      <li class="time">{worklogTime}</li>
       <li class="labels">
         <For each={props.worklog.labels}>
           {(label) => <span>{label.name}</span>}

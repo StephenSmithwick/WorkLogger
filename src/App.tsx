@@ -4,13 +4,14 @@ import type { hc } from "hono/client";
 import type { AppType } from "@/api";
 import { renderToStringAsync, Show } from "solid-js/web";
 import { Component, createSignal, createMemo } from "solid-js";
-import "temporal-polyfill/global";
-import "temporal-polyfill/types/global";
+import { createTimeAPI, TimeAPI } from "@/timeAPI";
 
 export type ApiClient = ReturnType<typeof hc<AppType>>;
+
 interface Context {
   api: ApiClient;
   timezone: string;
+  time: TimeAPI;
 }
 const Context = createContext<Context>();
 
@@ -52,9 +53,9 @@ const App: Component<AppProps> = ({ client, timezone }) => {
 };
 
 const TimezoneApp: Component<TimezoneAppProps> = ({ timezone, client }) => {
-  const [selectedDay, setSelectedDay] = createSignal(
-    Temporal.Now.plainDateISO(timezone).toString(),
-  );
+  const time = createTimeAPI(timezone);
+  const [selectedDay, setSelectedDay] = createSignal(time.today());
+
   const from = createMemo(() =>
     new Date(selectedDay())
       .toTemporalInstant()
@@ -70,7 +71,7 @@ const TimezoneApp: Component<TimezoneAppProps> = ({ timezone, client }) => {
   );
 
   return (
-    <Context.Provider value={{ api: client, timezone }}>
+    <Context.Provider value={{ api: client, timezone, time }}>
       <div class="filter">
         <input
           type="date"
