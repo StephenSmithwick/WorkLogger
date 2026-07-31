@@ -4,6 +4,8 @@ import { createStore } from "solid-js/store";
 import { Select, createOptions } from "@thisbeyond/solid-select";
 import "@thisbeyond/solid-select/style.css";
 import { WorklogResponse, Label } from "@/api";
+import "temporal-polyfill/global";
+import "temporal-polyfill/types/global";
 
 interface WorkLogFormProps {
   worklog: () => undefined | WorklogResponse;
@@ -14,24 +16,29 @@ interface WorkLogFormProps {
   setExpanded: (_: boolean) => void;
 }
 
-const defaultState = (): WorklogResponse => ({
-  id: NaN,
-  time: "",
-  duration: "1 hour",
-  name: "",
-  notes: "",
-  labels: [],
-});
-
-const toISOTime = (time: string) => new Date(time).toISOString();
-const toLocalTime = (time: string, timezone: string) =>
-  new Date(time)
-    .toTemporalInstant()
-    .toZonedDateTimeISO(timezone)
-    .toString({ offset: "never", timeZoneName: "never" });
-
 export function WorklogForm(props: WorkLogFormProps) {
   const { api, timezone } = context();
+  const toISOTime = (time: string) => new Date(time).toISOString();
+  const toLocalTime = (time: string) =>
+    new Date(time)
+      .toTemporalInstant()
+      .toZonedDateTimeISO(timezone)
+      .toString({ offset: "never", timeZoneName: "never" });
+  const now = () =>
+    Temporal.Now.zonedDateTimeISO(timezone)
+      .round({ smallestUnit: "minute" })
+      .toString({
+        offset: "never",
+        timeZoneName: "never",
+      });
+  const defaultState = (): WorklogResponse => ({
+    id: NaN,
+    time: now(),
+    duration: "1 hour",
+    name: "",
+    notes: "",
+    labels: [],
+  });
 
   const [mounted, setMounted] = createSignal(false);
   onMount(() => setMounted(true));
@@ -42,11 +49,9 @@ export function WorklogForm(props: WorkLogFormProps) {
   const [state, setState] = createStore<WorklogResponse>(defaultState());
 
   createEffect(() => {
-    const target = props.worklog();
     setState({
       ...defaultState(),
-      ...target,
-      time: target && toISOTime(target.time),
+      ...props.worklog(),
     });
   });
 
@@ -93,7 +98,7 @@ export function WorklogForm(props: WorkLogFormProps) {
         <li class="time expandable">
           <input
             type="datetime-local"
-            value={state.time && toLocalTime(state.time, timezone)}
+            value={state.time && toLocalTime(state.time)}
             onInput={(e) => setState("time", toISOTime(e.currentTarget.value))}
           />
         </li>
