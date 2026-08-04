@@ -1,4 +1,4 @@
-import { context } from "@/App";
+import { context } from "@/context";
 
 export function DeleteWorklog(props: { id: number; onDeleted: () => void }) {
   const { api } = context();

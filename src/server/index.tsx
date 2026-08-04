@@ -1,18 +1,17 @@
 /** @jsxImportSource hono/jsx */
 /** @jsxRuntime automatic */
-import { Hono } from "hono";
+import { Hono, type Context } from "hono";
 import { raw } from "hono/html";
 import { renderer } from "./renderer";
 import { api, AppType } from "@/api";
 import { hc } from "hono/client";
-import { appHtml } from "@/App";
-import { getCookie } from "hono/cookie";
+import { renderContextRouter } from "@/ContextRouter";
 
 const app = new Hono<{ Bindings: CloudflareBindings }>();
 app.route("/", api);
 app.use(renderer);
 
-export default app.get("/", async (c) => {
+async function renderApp(c: Context<{ Bindings: CloudflareBindings }>) {
   const client = hc<AppType>("http://isServer", {
     fetch: async (input: RequestInfo | URL, init?: RequestInit) =>
       api.request(
@@ -25,9 +24,11 @@ export default app.get("/", async (c) => {
         c.executionCtx,
       ),
   });
-  // TODO: consider using c.req.raw.cf?.timezone
-  const timezone = getCookie(c, "timezone");
+
+  const url = new URL(c.req.url).pathname;
   return c.render(
-    <div id="root">{raw(await appHtml({ timezone, client }))}</div>,
+    <div id="root">{raw(await renderContextRouter({ client, url }))}</div>,
   );
-});
+}
+
+export default app.get("/", renderApp).get("/:shortTimezone/:date", renderApp);

@@ -1,7 +1,7 @@
 import { createResource, createSignal } from "solid-js";
 import { WorklogForm } from "@/components/WorklogForm";
 import { Worklog } from "@/components/Worklog";
-import { context } from "@/App";
+import { context } from "@/context";
 import { For, Show, Suspense } from "solid-js";
 import { WorklogResponse } from "@/api";
 
@@ -48,6 +48,12 @@ export default function Worklogs({ from, to }: WorklogsProps) {
     };
   }
 
+  function worklogFormSubmit() {
+    setFormExpanded(false);
+    setEditingWorklog(undefined);
+    refetchWorklog();
+  }
+
   return (
     <ul>
       <Suspense fallback={<li>Loading...</li>}>
@@ -74,7 +80,7 @@ export default function Worklogs({ from, to }: WorklogsProps) {
           worklog={editingWorklog}
           labels={labels}
           onLabelsCreated={refetchLabels}
-          onSubmitted={refetchWorklog}
+          onSubmitted={worklogFormSubmit}
           expanded={formExpanded}
           setExpanded={setFormExpanded}
         />

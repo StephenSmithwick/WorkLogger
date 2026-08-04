@@ -1,7 +1,7 @@
 import { DeleteWorklog } from "@/components/DeleteWorklog";
 import { For } from "solid-js";
 import { WorklogResponse } from "@/api";
-import { context } from "@/App";
+import { context } from "@/context";
 
 interface WorklogProps {
   worklog: WorklogResponse;

@@ -1,5 +1,5 @@
 import { createSignal, createEffect, onMount, Show } from "solid-js";
-import { context } from "@/App";
+import { context } from "@/context";
 import { createStore } from "solid-js/store";
 import { Select, createOptions } from "@thisbeyond/solid-select";
 import "@thisbeyond/solid-select/style.css";
