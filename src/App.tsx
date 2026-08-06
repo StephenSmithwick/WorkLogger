@@ -3,7 +3,7 @@ import { Component, createMemo } from "solid-js";
 
 export interface AppProps {
   timezone: string;
-  selectedDay: string;
+  selectedDay: () => string;
   onSelectedDayChange: (date: string) => void;
 }
 
@@ -13,13 +13,13 @@ const App: Component<AppProps> = ({
   onSelectedDayChange,
 }) => {
   const from = createMemo(() =>
-    new Date(selectedDay)
+    new Date(selectedDay())
       .toTemporalInstant()
       .toZonedDateTimeISO(timezone)
       .toString({ timeZoneName: "never" }),
   );
   const to = createMemo(() =>
-    new Date(selectedDay)
+    new Date(selectedDay())
       .toTemporalInstant()
       .toZonedDateTimeISO(timezone)
       .add({ days: 1 })
@@ -31,7 +31,7 @@ const App: Component<AppProps> = ({
       <div class="filter">
         <input
           type="date"
-          value={selectedDay}
+          value={selectedDay()}
           onInput={(e) => onSelectedDayChange(e.currentTarget.value)}
         />
       </div>

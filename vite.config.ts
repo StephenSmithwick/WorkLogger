@@ -5,7 +5,11 @@ import ssrPlugin from "vite-ssr-components/plugin";
 import path from "path";
 
 export default defineConfig({
-  plugins: [cloudflare(), ssrPlugin(), solid({ ssr: true, exclude: "src/server/**" })],
+  plugins: [
+    cloudflare(),
+    ssrPlugin(),
+    solid({ ssr: true, exclude: "src/server/**" }),
+  ],
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),

@@ -35,9 +35,12 @@ export function WorklogForm(props: WorkLogFormProps) {
   const [state, setState] = createStore<WorklogResponse>(defaultState());
 
   createEffect(() => {
+    const { time: propTime } = props.worklog() ?? { time: undefined };
+    const { time: defaultTime } = defaultState();
     setState({
       ...defaultState(),
       ...props.worklog(),
+      time: propTime ? time.toLocalTime(propTime) : defaultTime,
     });
   });
 
@@ -84,7 +87,7 @@ export function WorklogForm(props: WorkLogFormProps) {
         <li class="time expandable">
           <input
             type="datetime-local"
-            value={state.time && time.toLocalTime(state.time)}
+            value={state.time}
             onInput={(e) =>
               setState("time", time.toISOTime(e.currentTarget.value))
             }

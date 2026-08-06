@@ -3,7 +3,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "vite build && $npm_execpath run build:pwa",
+    "build:pwa": "tsx scripts/generate-service-worker.ts",
     "preview": "$npm_execpath run build && vite preview",
     "deploy": "$npm_execpath run build && wrangler deploy",
     "cf-typegen": "wrangler types --env-interface CloudflareBindings",
@@ -28,6 +29,7 @@
     "vite": "^6.4.3",
     "vite-plugin-solid": "^2.11.12",
     "vite-ssr-components": "^0.6.1",
+    "workbox-build": "^7.4.1",
     "wrangler": "^4.110.0"
   }
 }

@@ -1,4 +1,4 @@
-import { Component, onMount } from "solid-js";
+import { Component, onMount, createSignal } from "solid-js";
 import { renderToStringAsync, Show } from "solid-js/web";
 import { Route, Router, useNavigate, useParams } from "@solidjs/router";
 import App from "@/App";
@@ -49,25 +49,27 @@ const WorklogRoute: Component<{ client: ApiClient }> = (props) => {
 
   const timezone = params.timezone.replace(/~/g, "/");
   const time = createTimeAPI(timezone);
+  const [date, setDate] = createSignal(params.date);
 
   onMount(() => {
-    if (!isValidTimezone(timezone) || !isValidDate(params.date)) {
+    if (!isValidTimezone(timezone) || !isValidDate(date())) {
       navigate("/", { replace: true });
     }
   });
 
   return (
     <Show
-      when={isValidTimezone(timezone) && isValidDate(params.date)}
+      when={isValidTimezone(timezone) && isValidDate(date())}
       fallback={<p>Loading...</p>}
     >
       <AppContext.Provider value={{ api: props.client, timezone, time }}>
         <App
           timezone={timezone}
-          selectedDay={params.date}
-          onSelectedDayChange={(date) =>
-            navigate(`/${params.timezone}/${date}`, { replace: true })
-          }
+          selectedDay={date}
+          onSelectedDayChange={(date) => {
+            setDate(date);
+            navigate(`/${params.timezone}/${date}`, { replace: true });
+          }}
         />
       </AppContext.Provider>
     </Show>
