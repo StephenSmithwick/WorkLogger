@@ -6,3 +6,5 @@ export function db(env: { DATABASE_URL: string }) {
   const sql = neon(env.DATABASE_URL);
   return drizzle({ client: sql, relations });
 }
+
+export type DB = ReturnType<typeof db>;

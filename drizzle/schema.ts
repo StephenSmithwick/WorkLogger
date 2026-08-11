@@ -8,6 +8,7 @@ export const worklogIdSeq = pgSequence("worklog_id_seq", { startWith: "1", incre
 export const label = pgTable("label", {
 	id: integer().primaryKey().generatedAlwaysAsIdentity({ name: "Label_id_seq" }),
 	name: text(),
+	user: text(),
 });
 
 export const worklog = pgTable("worklog", {
@@ -16,6 +17,7 @@ export const worklog = pgTable("worklog", {
 	notes: text(),
 	time: timestamp({ withTimezone: true }).notNull(),
 	duration: interval(),
+	user: text(),
 });
 
 export const worklogLabel = pgTable("worklog_label", {

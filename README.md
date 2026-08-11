@@ -35,4 +35,5 @@ pnpm run cf-typegen
 ## DB
 generate migration files: `npx drizzle-kit generate`
 migrate database: `npx drizzle-kit migrate`
+pull latest schema: `npx drizzle-kit pull`
 view database: `npx drizzle-kit studio`

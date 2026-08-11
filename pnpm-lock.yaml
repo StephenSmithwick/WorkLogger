@@ -11,6 +11,9 @@ importers:
       '@hono/node-server':
         specifier: ^2.0.8
         version: 2.0.8(hono@4.12.30)
+      '@hono/oauth-providers':
+        specifier: ^0.8.7
+        version: 0.8.7(hono@4.12.30)
       '@neondatabase/serverless':
         specifier: ^1.1.0
         version: 1.1.0
@@ -977,6 +980,12 @@ packages:
     engines: {node: '>=20'}
     peerDependencies:
       hono: ^4
+
+  '@hono/oauth-providers@0.8.7':
+    resolution: {integrity: sha512-N2onMhKxN1mN3XIOk4DfHoHdV9hlgOkPJSmUUyyrzRT4lFxogluFpYNEyz6bqxCXqKYm8CJs3DXTeELpa8h+bQ==}
+    engines: {node: '>=18.4.0'}
+    peerDependencies:
+      hono: '>=3.0.0'
 
   '@img/colour@1.1.0':
     resolution: {integrity: sha512-Td76q7j57o/tLVdgS746cYARfSyxk8iEfRxewL9h4OMzYhbW4TAcppl0mT4eyqXddh6L/jwoM75mo7ixa/pCeQ==}
@@ -3559,6 +3568,10 @@ snapshots:
     optional: true
 
   '@hono/node-server@2.0.8(hono@4.12.30)':
+    dependencies:
+      hono: 4.12.30
+
+  '@hono/oauth-providers@0.8.7(hono@4.12.30)':
     dependencies:
       hono: 4.12.30
 

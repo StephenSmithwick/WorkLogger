@@ -2,12 +2,14 @@
 /** @jsxRuntime automatic */
 import { Hono, type Context } from "hono";
 import { raw } from "hono/html";
-import { renderer } from "./renderer";
+import { renderer } from "@/server/renderer";
 import { api, AppType } from "@/api";
 import { hc } from "hono/client";
 import { renderContextRouter } from "@/ContextRouter";
+import { googleAuthentication, jwtAuthCookie } from "@/security";
 
 const app = new Hono<{ Bindings: CloudflareBindings }>();
+app.route("/auth/google", googleAuthentication).use(jwtAuthCookie);
 app.route("/", api);
 app.use(renderer);
 
@@ -19,6 +21,7 @@ async function renderApp(c: Context<{ Bindings: CloudflareBindings }>) {
         {
           ...init,
           cache: "no-store",
+          headers: { ...init?.headers, cookie: c.req.header("cookie") ?? "" },
         },
         c.env,
         c.executionCtx,
@@ -31,4 +34,4 @@ async function renderApp(c: Context<{ Bindings: CloudflareBindings }>) {
   );
 }
 
-export default app.get("/", renderApp).get("/:shortTimezone/:date", renderApp);
+export default app.get("/", renderApp).get("/:timezone/:date", renderApp);

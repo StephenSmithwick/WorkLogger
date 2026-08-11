@@ -1,7 +1,8 @@
 import { Hono } from "hono";
-import { db } from "@/db";
-import { eq, sql } from "drizzle-orm";
+import { db, type DB } from "@/db";
+import { eq, and } from "drizzle-orm";
 import { label, worklog, worklog_label } from "@/schema";
+import { jwtAuthCookie, authUser, type User } from "@/security";
 
 export type Label = typeof label.$inferSelect;
 
@@ -14,14 +15,12 @@ type WorklogLabel = typeof worklog_label.$inferSelect;
 type Worklog = typeof worklog.$inferSelect;
 type WorklogInsert = typeof worklog.$inferInsert;
 
-type DB = ReturnType<typeof db>;
-
 export const api = new Hono<{
   Bindings: CloudflareBindings;
   Variables: { db: DB };
 }>();
 
-api.use("*", async (c, next) => {
+api.use(jwtAuthCookie).use("*", async (c, next) => {
   c.set("db", db(c.env));
   await next();
 });
@@ -32,7 +31,10 @@ api.onError((err, c) => {
 });
 
 api.get("/label", async (c) => {
-  const result = await c.var.db.select().from(label);
+  const result = await c.var.db
+    .select()
+    .from(label)
+    .where(eq(label.user, authUser(c).name));
   return c.json(result);
 });
 
@@ -45,7 +47,7 @@ api.get("/worklog", async (c) => {
   };
 
   const result = await c.var.db.query.worklog.findMany({
-    where: from || to ? { time } : undefined,
+    where: { ...(from && to && { time }), user: { eq: authUser(c).name } },
     with: { labels: { columns: { name: true, id: true } } },
   });
   return c.json(result);
@@ -56,23 +58,25 @@ api.delete("/worklog", async (c) => {
   await c.var.db.delete(worklog_label).where(eq(worklog_label.worklogId, id));
   const deletedWorklog = await c.var.db
     .delete(worklog)
-    .where(eq(worklog.id, id))
+    .where(and(eq(worklog.id, id), eq(worklog.user, authUser(c).name)))
     .returning();
   return c.json(deletedWorklog);
 });
 
 api.post("/worklog", async (c) => {
+  const user = authUser(c);
   const newWorklog = await c.req.json();
-  const labelIds = await ensureLabelsExist(c.var.db, newWorklog.labels);
+  const labelIds = await ensureLabelsExist(c.var.db, newWorklog.labels, user);
   const action = newWorklog.id ? "update" : "insert";
   const values = {
+    user: user.name,
     time: new Date(newWorklog.time),
     duration: newWorklog.duration,
     name: newWorklog.name,
     notes: newWorklog.notes,
   };
   const upserted = newWorklog.id
-    ? await updateWorklog(c.var.db, newWorklog.id, values)
+    ? await updateWorklog(c.var.db, newWorklog.id, user, values)
     : await insertWorklog(c.var.db, values);
   const worklogId = upserted.id;
   await c.var.db
@@ -91,23 +95,29 @@ api.post("/worklog", async (c) => {
 
 async function insertWorklog(db: DB, values: WorklogInsert): Promise<Worklog> {
   const [inserted] = await db.insert(worklog).values(values).returning();
+  console.log("inserted", inserted);
   return inserted;
 }
 
 async function updateWorklog(
   db: DB,
   id: number,
+  authUser: User,
   values: WorklogInsert,
 ): Promise<Worklog> {
   const [updated] = await db
     .update(worklog)
     .set(values)
-    .where(eq(worklog.id, id))
+    .where(and(eq(worklog.id, id), eq(worklog.user, authUser.name)))
     .returning();
   return updated;
 }
 
-async function ensureLabelsExist(db: DB, labels: Label[]): Promise<number[]> {
+async function ensureLabelsExist(
+  db: DB,
+  labels: Label[],
+  authUser: User,
+): Promise<number[]> {
   const { existing: existingLabels = [], new: newLabels = [] } = Object.groupBy(
     labels,
     (l) => (l.id ? "existing" : "new"),
@@ -115,7 +125,10 @@ async function ensureLabelsExist(db: DB, labels: Label[]): Promise<number[]> {
 
   const createdLabels =
     newLabels.length > 0
-      ? await db.insert(label).values(newLabels).returning({ id: label.id })
+      ? await db
+          .insert(label)
+          .values(newLabels.map((label) => ({ ...label, user: authUser.name })))
+          .returning({ id: label.id })
       : [];
 
   return [...existingLabels, ...createdLabels].map((label) => label.id!);

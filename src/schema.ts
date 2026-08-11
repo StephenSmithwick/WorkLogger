@@ -10,6 +10,7 @@ import {
 
 export const worklog = pgTable("worklog", {
   id: serial("id").primaryKey(),
+  user: text("user"),
   name: text("name").notNull(),
   notes: text("notes"),
   time: timestamp("time", { withTimezone: true }).notNull(),
@@ -18,6 +19,7 @@ export const worklog = pgTable("worklog", {
 
 export const label = pgTable("label", {
   id: serial("id").primaryKey(),
+  user: text("user"),
   name: text("name").notNull(),
 });
 
