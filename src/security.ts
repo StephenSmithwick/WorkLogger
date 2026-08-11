@@ -1,28 +1,33 @@
 import { Hono, MiddlewareHandler, Context } from "hono";
-import { setCookie } from "hono/cookie";
+import { getCookie, setCookie } from "hono/cookie";
 import { googleAuth } from "@hono/oauth-providers/google";
-import { sign, jwt, type JwtVariables } from "hono/jwt";
+import { sign, jwt, type JwtVariables, verify } from "hono/jwt";
+import { HTTPException } from "hono/http-exception";
 
 const AUTH_TOKEN = "auth_token";
+const AUTH_PATH = "/auth/google";
+const JWT_PAYLOAD = "jwtPayload";
+
+const alg = "HS256";
 
 export interface User {
   name: string;
   email: string;
   exp: number;
 }
-export const authUser = (c: Context) => c.get("jwtPayload") as User;
+export const authUser = (c: Context) => c.get(JWT_PAYLOAD) as User;
 
 export const googleAuthentication = new Hono<{
   Bindings: CloudflareBindings;
 }>()
-  .use("/", (c, next) =>
+  .use(AUTH_PATH, (c, next) =>
     googleAuth({
       client_id: c.env.GOOGLE_ID,
       client_secret: c.env.GOOGLE_SECRET,
       scope: ["openid", "email", "profile"],
     })(c, next),
   )
-  .get("/", async (c) => {
+  .get(AUTH_PATH, async (c) => {
     const user = c.get("user-google");
 
     if (!user) {
@@ -40,12 +45,29 @@ export const googleAuthentication = new Hono<{
     setCookie(c, AUTH_TOKEN, token, {
       httpOnly: true,
       secure: import.meta.env.PROD,
-      sameSite: "strict",
+      sameSite: "lax",
       path: "/",
       maxAge: 60 * 60 * 24,
     });
     return c.redirect("/");
   });
 
-export const jwtAuthCookie: MiddlewareHandler = (c, next) =>
-  jwt({ secret: c.env.JWT_SECRET, alg: "HS256", cookie: AUTH_TOKEN })(c, next);
+/**
+ * Checks for jwt auth_token and fails if not found
+ */
+export const requireAuthCookie: MiddlewareHandler = (c, next) =>
+  jwt({ secret: c.env.JWT_SECRET, alg, cookie: AUTH_TOKEN })(c, next);
+
+/**
+ * Checks for jwt auth_token and redirects to auth page if not found
+ */
+export const requireAuthPage: MiddlewareHandler = async (c, next) => {
+  try {
+    const token = getCookie(c, AUTH_TOKEN);
+    const payload = await verify(token!, c.env.JWT_SECRET, alg);
+    c.set(JWT_PAYLOAD, payload);
+    return await next();
+  } catch (error) {
+    return c.redirect(AUTH_PATH);
+  }
+};

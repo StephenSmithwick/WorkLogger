@@ -6,32 +6,45 @@ import { renderer } from "@/server/renderer";
 import { api, AppType } from "@/api";
 import { hc } from "hono/client";
 import { renderContextRouter } from "@/ContextRouter";
-import { googleAuthentication, jwtAuthCookie } from "@/security";
+import {
+  googleAuthentication,
+  requireAuthPage,
+  requireAuthCookie,
+} from "@/security";
 
-const app = new Hono<{ Bindings: CloudflareBindings }>();
-app.route("/auth/google", googleAuthentication).use(jwtAuthCookie);
-app.route("/", api);
-app.use(renderer);
-
-async function renderApp(c: Context<{ Bindings: CloudflareBindings }>) {
-  const client = hc<AppType>("http://isServer", {
+const client = (c: Context) =>
+  hc<AppType>("http://isServer", {
     fetch: async (input: RequestInfo | URL, init?: RequestInit) =>
       api.request(
         input,
         {
           ...init,
           cache: "no-store",
-          headers: { ...init?.headers, cookie: c.req.header("cookie") ?? "" },
+          headers: {
+            ...init?.headers,
+            cookie: c.req.header("cookie") ?? "",
+          },
         },
         c.env,
         c.executionCtx,
       ),
   });
 
-  const url = new URL(c.req.url).pathname;
-  return c.render(
-    <div id="root">{raw(await renderContextRouter({ client, url }))}</div>,
+const url = (c: Context) => new URL(c.req.url).pathname;
+const renderRoot = async (c: Context) =>
+  c.render(
+    <div id="root">
+      {raw(await renderContextRouter({ client: client(c), url: url(c) }))}
+    </div>,
   );
-}
 
-export default app.get("/", renderApp).get("/:timezone/:date", renderApp);
+const app = new Hono<{ Bindings: CloudflareBindings }>();
+
+export default app
+  .route("/", googleAuthentication)
+  .use(renderer)
+  .get("/", renderRoot)
+  .use("/", requireAuthPage)
+  .get("/:timezone/:date", renderRoot)
+  .use("/:timezone/:date", requireAuthPage)
+  .route("/", api);

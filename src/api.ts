@@ -2,7 +2,9 @@ import { Hono } from "hono";
 import { db, type DB } from "@/db";
 import { eq, and } from "drizzle-orm";
 import { label, worklog, worklog_label } from "@/schema";
-import { jwtAuthCookie, authUser, type User } from "@/security";
+import { requireAuthCookie, authUser, type User } from "@/security";
+import { NeonDbError } from "@neondatabase/serverless";
+import { HTTPException } from "hono/http-exception";
 
 export type Label = typeof label.$inferSelect;
 
@@ -20,14 +22,20 @@ export const api = new Hono<{
   Variables: { db: DB };
 }>();
 
-api.use(jwtAuthCookie).use("*", async (c, next) => {
+api.use(requireAuthCookie).use("*", async (c, next) => {
   c.set("db", db(c.env));
   await next();
 });
 
 api.onError((err, c) => {
-  console.error("Database query failed:", err);
-  return c.text("Failed to connect to database", 500);
+  if (err instanceof HTTPException) {
+    return err.getResponse();
+  } else if (err instanceof NeonDbError) {
+    console.error("Database query failed:", err);
+    return c.json({ message: "Failed to connect to database" }, 500);
+  }
+  console.error(err);
+  return c.text("Internal Server Error", 500);
 });
 
 api.get("/label", async (c) => {
@@ -78,6 +86,7 @@ api.post("/worklog", async (c) => {
   const upserted = newWorklog.id
     ? await updateWorklog(c.var.db, newWorklog.id, user, values)
     : await insertWorklog(c.var.db, values);
+  if (!upserted) return c.json({ error: "Worklog not found" }, 404);
   const worklogId = upserted.id;
   await c.var.db
     .delete(worklog_label)
