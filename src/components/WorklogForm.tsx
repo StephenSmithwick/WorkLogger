@@ -76,8 +76,8 @@ export function WorklogForm(props: WorkLogFormProps) {
 
   return (
     <form onSubmit={handleSubmit}>
-      {error() && <p class="error">{error()}</p>}
       <ul class="worklogForm" classList={{ expanded: expanded() }}>
+        {error() && <li class="error">{error()}</li>}
         <li class="name expandable">
           <input
             value={state.name}

@@ -8,6 +8,8 @@
     --accent-color: #018fc0;
     --delete-color: #d13f0b;
     --delete-hover: #fee2e2;
+    --error-color: #d13f0b;
+    --error-bg: #fee2e2;
     --label-bg: #ccd8de;
     --label-text: #96157f;
     --spacing-sm: 0.5rem;
@@ -220,6 +222,15 @@ button.delete:focus-visible {
     width: unset;
 }
 
+.worklogForm .error {
+    background-color: var(--error-bg);
+    color: var(--error-color);
+    font-weight: bold;
+    padding: 0 var(--spacing-md);
+    margin: calc(-1 * var(--spacing-md)) calc(-1 * var(--spacing-md)) 0;
+    border-radius: var(--border-radius) var(--border-radius) 0 0;
+}
+
 @media (min-width: 640px) {
     .worklog {
         grid-template-columns: minmax(150px, 2fr) auto auto;
@@ -273,6 +284,7 @@ button.delete:focus-visible {
     .worklogForm.expanded {
         grid-template-columns: 1fr 1fr;
         grid-template-areas:
+            "error error"
             "name name"
             "time duration"
             "notes notes"
@@ -300,5 +312,8 @@ button.delete:focus-visible {
     .worklogForm .action {
         grid-area: action;
         margin-top: 0;
+    }
+    .worklogForm .error {
+        grid-area: error;
     }
 }
