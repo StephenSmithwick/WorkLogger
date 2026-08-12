@@ -1,4 +1,10 @@
-import { createSignal, createEffect, onMount, Show } from "solid-js";
+import {
+  createSignal,
+  createEffect,
+  onMount,
+  Show,
+  createMemo,
+} from "solid-js";
 import { context } from "@/context";
 import { createStore } from "solid-js/store";
 import { Select, createOptions } from "@thisbeyond/solid-select";
@@ -33,6 +39,9 @@ export function WorklogForm(props: WorkLogFormProps) {
   const [submitting, setSubmitting] = createSignal(false);
   const [error, setError] = createSignal<string | null>(null);
   const [state, setState] = createStore<WorklogResponse>(defaultState());
+  const usedLabels = createMemo(
+    () => new Set(state.labels.map(({ name }) => name)),
+  );
 
   createEffect(() => {
     const { time: propTime } = props.worklog() ?? { time: undefined };
@@ -44,11 +53,10 @@ export function WorklogForm(props: WorkLogFormProps) {
     });
   });
 
-  const selectProps = createOptions(() => props.labels().map((l) => l), {
-    extractText: (label: Label) => label.name,
-    createable: (name: string, exists: boolean) =>
-      exists ? undefined : { name },
-    format: (label: Label) => <span>{label.name}</span>,
+  const selectProps = createOptions(() => props.labels(), {
+    key: "name",
+    createable: true,
+    disable: (name: string) => usedLabels().has(name),
   });
 
   async function handleSubmit(e: SubmitEvent) {
