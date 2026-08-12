@@ -2,7 +2,6 @@ import { Hono, MiddlewareHandler, Context } from "hono";
 import { getCookie, setCookie } from "hono/cookie";
 import { googleAuth } from "@hono/oauth-providers/google";
 import { sign, jwt, type JwtVariables, verify } from "hono/jwt";
-import { HTTPException } from "hono/http-exception";
 
 const AUTH_TOKEN = "auth_token";
 const AUTH_PATH = "/auth/google";
