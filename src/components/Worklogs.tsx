@@ -3,7 +3,7 @@ import { WorklogForm } from "@/components/WorklogForm";
 import { Worklog } from "@/components/Worklog";
 import { context } from "@/context";
 import { For, Show, Suspense } from "solid-js";
-import { WorklogResponse } from "@/api";
+import { WorklogData } from "@/api";
 
 type WorklogsProps = {
   from: () => string;
@@ -34,10 +34,10 @@ export default function Worklogs({ from, to }: WorklogsProps) {
     { initialValue: [] },
   );
 
-  const [editingWorklog, setEditingWorklog] = createSignal<WorklogResponse>();
+  const [editingWorklog, setEditingWorklog] = createSignal<WorklogData>();
   const [formExpanded, setFormExpanded] = createSignal(false);
 
-  function edit(wl: WorklogResponse) {
+  function edit(wl: WorklogData) {
     return () => {
       setFormExpanded(true);
       if (wl.id === editingWorklog()?.id) {

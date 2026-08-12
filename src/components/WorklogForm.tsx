@@ -9,11 +9,11 @@ import { context } from "@/context";
 import { createStore } from "solid-js/store";
 import { Select, createOptions } from "@thisbeyond/solid-select";
 import "@thisbeyond/solid-select/style.css";
-import { WorklogResponse, Label } from "@/api";
+import { WorklogData, LabelData } from "@/api";
 
 interface WorkLogFormProps {
-  worklog: () => undefined | WorklogResponse;
-  labels: () => Label[];
+  worklog: () => undefined | WorklogData;
+  labels: () => LabelData[];
   onLabelsCreated: () => void;
   onSubmitted: () => void;
   expanded: () => boolean;
@@ -23,7 +23,7 @@ interface WorkLogFormProps {
 export function WorklogForm(props: WorkLogFormProps) {
   const { api, time } = context();
 
-  const defaultState = (): WorklogResponse => ({
+  const defaultState = (): WorklogData => ({
     id: NaN,
     time: time.now(),
     duration: "1 hour",
@@ -38,7 +38,7 @@ export function WorklogForm(props: WorkLogFormProps) {
   const { expanded, setExpanded } = props;
   const [submitting, setSubmitting] = createSignal(false);
   const [error, setError] = createSignal<string | null>(null);
-  const [state, setState] = createStore<WorklogResponse>(defaultState());
+  const [state, setState] = createStore<WorklogData>(defaultState());
   const usedLabels = createMemo(
     () => new Set(state.labels.map(({ name }) => name)),
   );
@@ -123,7 +123,7 @@ export function WorklogForm(props: WorkLogFormProps) {
               multiple
               {...selectProps}
               initialValue={state.labels}
-              onChange={(selected: Label[]) => setState("labels", selected)}
+              onChange={(selected: LabelData[]) => setState("labels", selected)}
             />
           </Show>
         </li>

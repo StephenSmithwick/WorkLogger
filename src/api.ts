@@ -6,13 +6,14 @@ import { requireAuthCookie, authUser, type User } from "@/security";
 import { NeonDbError } from "@neondatabase/serverless";
 import { HTTPException } from "hono/http-exception";
 
-export type Label = typeof label.$inferSelect;
+export interface LabelData extends Omit<Label, "user"> {}
 
-export interface WorklogResponse extends Omit<Worklog, "time"> {
+export interface WorklogData extends Omit<Worklog, "time" | "user"> {
   time: string;
   labels: Label[];
 }
 
+type Label = typeof label.$inferSelect;
 type WorklogLabel = typeof worklog_label.$inferSelect;
 type Worklog = typeof worklog.$inferSelect;
 type WorklogInsert = typeof worklog.$inferInsert;
