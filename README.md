@@ -21,8 +21,13 @@ pnpm run preview
 pnpm run deploy
 ```
 
-## Updating cloudflare properties (`c`)
-To re-generate typescript types for cloudflare parameters:
+## Adding Secrets to the cloudflare workers
+For a new cloudflare worker environment you must add the necesary secrets
+(see `.dev.vars.example` for all secrets used by the app) 
+`npx wrangler secret put ENV_VARIABLE`
+
+## Updating cloudflare bindings
+To re-generate typescript types for cloudflare bindings:
 
 ```txt
 pnpm run cf-typegen
