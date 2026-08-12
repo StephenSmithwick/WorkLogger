@@ -43,8 +43,8 @@ const app = new Hono<{ Bindings: CloudflareBindings }>();
 export default app
   .route("/", googleAuthentication)
   .use(renderer)
-  .get("/", renderRoot)
   .use("/", requireAuthPage)
-  .get("/:timezone/:date", renderRoot)
+  .get("/", renderRoot)
   .use("/:timezone/:date", requireAuthPage)
+  .get("/:timezone/:date", renderRoot)
   .route("/", api);
