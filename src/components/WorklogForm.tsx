@@ -71,6 +71,8 @@ export function WorklogForm(props: WorkLogFormProps) {
         },
       });
       if (!res.ok) throw new Error("Failed to save worklog entry");
+      const result = await res.json();
+      if (result.createdLabels) props.onLabelsCreated();
 
       setState(defaultState());
       props.onSubmitted();

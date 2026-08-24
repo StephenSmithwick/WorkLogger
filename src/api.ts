@@ -10,7 +10,7 @@ export interface LabelData extends Omit<Label, "user"> {}
 
 export interface WorklogData extends Omit<Worklog, "time" | "user"> {
   time: string;
-  labels: Label[];
+  labels: LabelData[];
 }
 
 type Label = typeof label.$inferSelect;
@@ -72,7 +72,11 @@ export const api = new Hono<{
   .post("/worklog", async (c) => {
     const user = authUser(c);
     const newWorklog = await c.req.json();
-    const labelIds = await ensureLabelsExist(c.var.db, newWorklog.labels, user);
+    const { labelIds, createdLabels } = await ensureLabelsExist(
+      c.var.db,
+      newWorklog.labels,
+      user,
+    );
     const action = newWorklog.id ? "update" : "insert";
     const values = {
       user: user.name,
@@ -97,7 +101,7 @@ export const api = new Hono<{
       await c.var.db.insert(worklog_label).values(labelsConnections);
     }
 
-    return c.json({ success: true, action, worklog: upserted });
+    return c.json({ success: true, action, worklog: upserted, createdLabels });
   });
 
 async function insertWorklog(db: DB, values: WorklogInsert): Promise<Worklog> {
@@ -124,13 +128,13 @@ async function ensureLabelsExist(
   db: DB,
   labels: Label[],
   authUser: User,
-): Promise<number[]> {
+): Promise<{ labelIds: number[]; createdLabels: Label[] }> {
   const { existing: existingLabels = [], new: newLabels = [] } = Object.groupBy(
     labels,
     (l) => (l.id ? "existing" : "new"),
   );
 
-  const createdLabels =
+  const createdLabels: Label[] =
     newLabels.length > 0
       ? await db
           .insert(label)
@@ -138,7 +142,10 @@ async function ensureLabelsExist(
           .returning()
       : [];
 
-  return [...existingLabels, ...createdLabels].map((label) => label.id!);
+  return {
+    labelIds: [...existingLabels, ...createdLabels].map((label) => label.id!),
+    createdLabels,
+  };
 }
 
 export type AppType = typeof api;
