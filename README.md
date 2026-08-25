@@ -3,6 +3,20 @@ Allows the logging of daily work
 
 This is a hono, solidjs, drizzle, neon Single page application with serverside rendering with cloudflare as the deployment target.
 
+## Build steps
+Install Dependencies: `pnpm install`
+- "dev": Run in dev mode, hot compiles, best way to start building new features
+- "test":  Test using vitest
+- "build:pwa": Build Progressive Web App (pwa)
+- "build": build app and pwa
+- "preview": Run this before deploying, this will run closer to how it will be deployed on Cloudflare
+- "deploy": Deploy to cloudflare
+- "cf-typegen": Update typescript to include latest cloudflare bindings
+- "db": Upload db url into cloudflare bindings
+
+## Testing
+`pnpm exec playwright install`
+
 ## Running Locally
 After installing the dependencies (`pnpm install`) you can start the dev server with:
 ```zsh
@@ -42,3 +56,7 @@ generate migration files: `npx drizzle-kit generate`
 migrate database: `npx drizzle-kit migrate`
 pull latest schema: `npx drizzle-kit pull`
 view database: `npx drizzle-kit studio`
+
+## Authentication
+We authenticate via google auth
+Setup authentication details here: [google auth console](https://console.cloud.google.com/auth/clients/1009621445851-9f41276apmvvrekvlhl1casmmuu8sqgl.apps.googleusercontent.com)

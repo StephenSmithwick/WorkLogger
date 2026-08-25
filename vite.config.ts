@@ -1,10 +1,10 @@
 import { cloudflare } from "@cloudflare/vite-plugin";
-import { defineConfig } from "vite";
+import { defineConfig, UserConfig } from "vite";
 import solid from "vite-plugin-solid";
 import ssrPlugin from "vite-ssr-components/plugin";
 import path from "path";
 
-export default defineConfig({
+export const viteConfig: UserConfig = {
   plugins: [
     cloudflare(),
     ssrPlugin(),
@@ -18,4 +18,6 @@ export default defineConfig({
   css: {
     modules: false,
   },
-});
+};
+
+export default defineConfig(viteConfig);

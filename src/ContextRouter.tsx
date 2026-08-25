@@ -3,7 +3,7 @@ import { renderToStringAsync, Show } from "solid-js/web";
 import { Route, Router, useNavigate, useParams } from "@solidjs/router";
 import App from "@/App";
 import { AppContext, ApiClient } from "@/context";
-import { createTimeAPI } from "@/timeAPI";
+import { createTimeAPI } from "@/TimeAPI";
 import "temporal-polyfill/global";
 
 interface Props {

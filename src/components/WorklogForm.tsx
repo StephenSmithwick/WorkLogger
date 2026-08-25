@@ -86,10 +86,12 @@ export function WorklogForm(props: WorkLogFormProps) {
 
   return (
     <form onSubmit={handleSubmit}>
+      <input hidden name="id" value={state.id} />
       <ul class="worklogForm" classList={{ expanded: expanded() }}>
         {error() && <li class="error">{error()}</li>}
         <li class="name expandable">
           <input
+            name="name"
             value={state.name}
             onInput={(e) => setState("name", e.currentTarget.value)}
           />
@@ -97,6 +99,7 @@ export function WorklogForm(props: WorkLogFormProps) {
         <li class="time expandable">
           <input
             type="datetime-local"
+            name="time"
             value={state.time}
             onInput={(e) =>
               setState("time", time.toISOTime(e.currentTarget.value))
@@ -105,6 +108,7 @@ export function WorklogForm(props: WorkLogFormProps) {
         </li>
         <li class="duration expandable">
           <input
+            name="duration"
             type="text"
             value={state.duration ?? ""}
             onInput={(e) => setState("duration", e.currentTarget.value)}
@@ -112,6 +116,7 @@ export function WorklogForm(props: WorkLogFormProps) {
         </li>
         <li class="notes expandable">
           <textarea
+            name="notes"
             rows="5"
             cols="40"
             placeholder="Notes..."
@@ -122,6 +127,7 @@ export function WorklogForm(props: WorkLogFormProps) {
         <li class="labels expandable">
           <Show when={mounted()}>
             <Select
+              name="labels"
               multiple
               {...selectProps}
               initialValue={state.labels}
@@ -130,10 +136,11 @@ export function WorklogForm(props: WorkLogFormProps) {
           </Show>
         </li>
         <li class="action">
-          <button type="submit" disabled={submitting()}>
+          <button type="submit" disabled={submitting()} name="save">
             {submitting() ? "Saving..." : "Log Work"}
           </button>
           <button
+            name="expand"
             type="button"
             class="expand"
             onclick={() => setExpanded((prev) => !prev)}
