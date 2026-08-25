@@ -15,7 +15,8 @@ Install Dependencies: `pnpm install`
 - "db": Upload db url into cloudflare bindings
 
 ## Testing
-`pnpm exec playwright install`
+1. Install playwrite browser: `pnpm exec playwright install`
+2. Run tests in background: `pnpm test`
 
 ## Running Locally
 After installing the dependencies (`pnpm install`) you can start the dev server with:
@@ -59,4 +60,4 @@ view database: `npx drizzle-kit studio`
 
 ## Authentication
 We authenticate via google auth
-Setup authentication details here: [google auth console](https://console.cloud.google.com/auth/clients/1009621445851-9f41276apmvvrekvlhl1casmmuu8sqgl.apps.googleusercontent.com)
+Locally, authentication will not run by default.  To use google authenticator please set the`GOOGLE_ID` and `GOOGLE_SECRET` from the [google auth console](https://console.cloud.google.com/auth/clients/1009621445851-9f41276apmvvrekvlhl1casmmuu8sqgl.apps.googleusercontent.com)
