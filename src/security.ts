@@ -61,7 +61,7 @@ export const googleAuthentication = new Hono<{
       exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24,
     };
 
-    const token = await sign(payload, c.env.JWT_SECRET);
+    const token = await sign(payload, c.env.JWT_SECRET!);
 
     setCookie(c, AUTH_TOKEN, token, {
       httpOnly: true,
