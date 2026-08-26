@@ -43,7 +43,7 @@ export const api = new Hono<{
     const result = await c.var.db
       .select()
       .from(label)
-      .where(eq(label.user, authUser(c).name));
+      .where(eq(label.user, authUser(c).sub));
     return c.json(result);
   })
   .get("/worklog", async (c) => {
@@ -55,7 +55,7 @@ export const api = new Hono<{
     };
 
     const result = await c.var.db.query.worklog.findMany({
-      where: { ...(from && to && { time }), user: { eq: authUser(c).name } },
+      where: { ...(from && to && { time }), user: { eq: authUser(c).sub } },
       with: { labels: { columns: { name: true, id: true } } },
     });
     return c.json(result);
@@ -65,7 +65,7 @@ export const api = new Hono<{
     await c.var.db.delete(worklog_label).where(eq(worklog_label.worklogId, id));
     const deletedWorklog = await c.var.db
       .delete(worklog)
-      .where(and(eq(worklog.id, id), eq(worklog.user, authUser(c).name)))
+      .where(and(eq(worklog.id, id), eq(worklog.user, authUser(c).sub)))
       .returning();
     return c.json(deletedWorklog);
   })
@@ -79,7 +79,7 @@ export const api = new Hono<{
     );
     const action = newWorklog.id ? "update" : "insert";
     const values = {
-      user: user.name,
+      user: user.sub,
       time: new Date(newWorklog.time),
       duration: newWorklog.duration,
       name: newWorklog.name,
@@ -119,7 +119,7 @@ async function updateWorklog(
   const [updated] = await db
     .update(worklog)
     .set(values)
-    .where(and(eq(worklog.id, id), eq(worklog.user, authUser.name)))
+    .where(and(eq(worklog.id, id), eq(worklog.user, authUser.sub)))
     .returning();
   return updated;
 }
@@ -138,7 +138,7 @@ async function ensureLabelsExist(
     newLabels.length > 0
       ? await db
           .insert(label)
-          .values(newLabels.map((label) => ({ ...label, user: authUser.name })))
+          .values(newLabels.map((label) => ({ ...label, user: authUser.sub })))
           .returning()
       : [];
 
