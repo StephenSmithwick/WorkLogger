@@ -10,9 +10,10 @@ export const viteConfig: UserConfig = {
     ssrPlugin(),
     solid({ ssr: true, exclude: "src/server/**" }),
   ],
+  esbuild: { jsx: 'automatic', jsxImportSource: 'hono/jsx' },
   resolve: {
     alias: {
-      "@": path.resolve(__dirname, "./src"),
+      "@": path.resolve(import.meta.dirname, "./src"),
     },
   },
   css: {
