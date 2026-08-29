@@ -1,95 +1,13 @@
 import { expect, test, vi } from "vitest";
-import { fireEvent, render } from "@solidjs/testing-library";
-import { AppContext } from "@/context";
+import { render } from "@solidjs/testing-library";
 import { WorklogForm } from "./WorklogForm";
-import { TestTimeAPI } from "@/test/TimeAPI";
 import { testWorklog } from "@/test/fixtures";
-
-interface WorklogView {
-  id: string;
-  duration: string;
-  time: string;
-  name: string;
-  notes: string;
-  labels: string[];
-}
-
-function readWorklog(container: HTMLElement): WorklogView {
-  const input = (key: string) =>
-    container.querySelector<HTMLInputElement>(`input[name="${key}"]`)!.value;
-  const text = (key: string) =>
-    container.querySelector<HTMLTextAreaElement>(`textarea[name="${key}"]`)!
-      .value;
-  const solidSelect = (key: string) =>
-    [
-      ...container.querySelectorAll<HTMLSpanElement>(
-        `li.${key} .solid-select-multi-value > span`,
-      ),
-    ].map((span) => span.textContent);
-  return {
-    id: input("id"),
-    duration: input("duration"),
-    time: input("time"),
-    name: input("name"),
-    notes: text("notes"),
-    labels: solidSelect("labels"),
-  };
-}
-
-function setInput(container: HTMLElement, name: string, value: string) {
-  const input = container.querySelector<HTMLInputElement>(
-    `input[name="${name}"]`,
-  )!;
-
-  input.value = value;
-  fireEvent.change(input);
-}
-
-function setTextArea(container: HTMLElement, name: string, value: string) {
-  const textarea = container.querySelector<HTMLTextAreaElement>(
-    `textarea[name="${name}"]`,
-  )!;
-  fireEvent.input(textarea, {
-    target: { value: value },
-  });
-}
-
-function createOption(container: HTMLElement, name: string, value: string) {
-  const input = container.querySelector<HTMLInputElement>(
-    `input[name="${name}"]`,
-  )!;
-  const target = { value: value };
-  fireEvent.input(input, { target });
-
-  const option = [
-    ...container.querySelectorAll<HTMLDivElement>(
-      `li.${name} .solid-select-list > div.solid-select-option`,
-    ),
-  ].find((div) => div.textContent === `Create ${value}`)!;
-
-  fireEvent.click(option);
-}
-
-function testContext() {
-  const timezone = "America/Denver";
-  const api = {
-    worklog: {
-      $post: vi.fn(),
-    },
-  } as any;
-
-  const time = new TestTimeAPI(timezone, "2026-08-25T04:00");
-
-  return {
-    api,
-    time,
-    timezone,
-  };
-}
+import { TestContext } from "@/test/TestContext";
+import { WorklogFormView } from "@/test/WorklogFormView";
 
 test("WorklogForm has correct defaults", () => {
   const { container } = render(() => (
-    <AppContext.Provider value={testContext()}>
+    <TestContext>
       <WorklogForm
         worklog={() => undefined}
         labels={() => []}
@@ -98,11 +16,11 @@ test("WorklogForm has correct defaults", () => {
         expanded={() => false}
         setExpanded={vi.fn()}
       />
-    </AppContext.Provider>
+    </TestContext>
   ));
 
-  const received = readWorklog(container);
-  expect(received).toEqual({
+  const received = new WorklogFormView(container);
+  expect(received.values()).toEqual({
     id: "NaN",
     duration: "1 hour",
     time: "2026-08-25T04:00",
@@ -125,7 +43,7 @@ test("WorklogForm populates from an existing worklog", () => {
     ],
   });
   const { container } = render(() => (
-    <AppContext.Provider value={testContext()}>
+    <TestContext>
       <WorklogForm
         worklog={() => worklog}
         labels={() => []}
@@ -134,11 +52,11 @@ test("WorklogForm populates from an existing worklog", () => {
         expanded={() => false}
         setExpanded={vi.fn()}
       />
-    </AppContext.Provider>
+    </TestContext>
   ));
 
-  const received = readWorklog(container);
-  expect(received).toEqual({
+  const received = new WorklogFormView(container);
+  expect(received.values()).toEqual({
     id: "1",
     duration: "2 hours",
     time: "2026-08-25T01:00",
@@ -150,8 +68,9 @@ test("WorklogForm populates from an existing worklog", () => {
 
 test("WorklogForm updates an existing worklog", () => {
   const worklog = testWorklog({ id: 1 });
+  const $post = vi.fn();
   const { container } = render(() => (
-    <AppContext.Provider value={testContext()}>
+    <TestContext api={{ worklog: { $post } }}>
       <WorklogForm
         worklog={() => worklog}
         labels={() => []}
@@ -160,23 +79,39 @@ test("WorklogForm updates an existing worklog", () => {
         expanded={() => false}
         setExpanded={vi.fn()}
       />
-    </AppContext.Provider>
+    </TestContext>
   ));
 
-  setInput(container, "name", "Test");
-  setInput(container, "duration", "2 hours");
-  setInput(container, "time", "2026-08-25T01:00");
-  setTextArea(container, "notes", "Test notes");
-  createOption(container, "labels", "test");
-  createOption(container, "labels", "test 2");
+  const form = new WorklogFormView(container);
+  form.setValues({
+    name: "Test",
+    duration: "2 hours",
+    time: "2026-08-25T01:00",
+    notes: "Test notes",
+    labels: [
+      { input: "test", select: "Create test" },
+      { input: "test 2", select: "Create test 2" },
+    ],
+  });
 
-  const received = readWorklog(container);
-  expect(received).toEqual({
+  expect(form.values()).toEqual({
     id: "1",
     duration: "2 hours",
     time: "2026-08-25T01:00",
     name: "Test",
     notes: "Test notes",
     labels: ["test", "test 2"],
+  });
+
+  form.submit();
+  expect($post).toHaveBeenCalledExactlyOnceWith({
+    json: {
+      duration: "1 hour",
+      id: 1,
+      labels: [{ name: "test" }, { name: "test 2" }],
+      name: "Test work",
+      notes: "Test notes",
+      time: "2026-08-25T10:00:00.000Z",
+    },
   });
 });
