@@ -1,5 +1,6 @@
 import Worklogs from "@/components/Worklogs";
 import { Component, createMemo } from "solid-js";
+import { context } from "@/context";
 
 export interface AppProps {
   timezone: string;
@@ -12,19 +13,10 @@ const App: Component<AppProps> = ({
   selectedDay,
   onSelectedDayChange,
 }) => {
-  const from = createMemo(() =>
-    new Date(selectedDay())
-      .toTemporalInstant()
-      .toZonedDateTimeISO(timezone)
-      .toString({ timeZoneName: "never" }),
-  );
-  const to = createMemo(() =>
-    new Date(selectedDay())
-      .toTemporalInstant()
-      .toZonedDateTimeISO(timezone)
-      .add({ days: 1 })
-      .toString({ timeZoneName: "never" }),
-  );
+  const { time } = context();
+
+  const from = createMemo(() => time.toAPITime(selectedDay()));
+  const to = createMemo(() => time.toAPITime(selectedDay(), { days: 1 }));
 
   return (
     <>

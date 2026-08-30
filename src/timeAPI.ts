@@ -1,6 +1,7 @@
 import "temporal-polyfill/global";
 import "temporal-polyfill/types/global";
 
+const ZERO = { days: 0 };
 export class TimeAPI {
   zone: string;
 
@@ -27,8 +28,15 @@ export class TimeAPI {
         day: "numeric",
         hour: "numeric",
         minute: "numeric",
-        timeZoneName: "short", // Includes the timezone (e.g., EST/EDT)
+        timeZoneName: "short",
       });
+  }
+  toAPITime(time: string, add?: Temporal.DurationLikeObject) {
+    return new Date(time)
+      .toTemporalInstant()
+      .toZonedDateTimeISO(this.zone)
+      .add({ ...ZERO, ...add })
+      .toString({ timeZoneName: "never" });
   }
   today() {
     return Temporal.Now.plainDateISO(this.zone).toString();
