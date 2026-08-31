@@ -14,7 +14,11 @@ export const Worklog = (props: WorklogProps) => {
   const { time } = context();
   const worklogTime = time.toDisplayTime(props.worklog.time);
   return (
-    <ul class="worklog" classList={{ editing: props.editing }}>
+    <ul
+      class="worklog"
+      classList={{ editing: props.editing }}
+      id={props.worklog.id.toString()}
+    >
       <li class="name">
         <button class="edit" onClick={props.onEdit}>
           {props.editing ? "✕" : "✎"}

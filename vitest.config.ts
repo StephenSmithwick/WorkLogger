@@ -15,6 +15,7 @@ export default defineConfig({
   },
 
   test: {
+    setupFiles: ["src/test/setup.ts"],
     include: ["src/**/*.test.tsx"],
 
     browser: {

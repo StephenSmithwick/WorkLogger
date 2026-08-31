@@ -1,4 +1,4 @@
-import Worklogs from "@/components/Worklogs";
+import { Worklogs } from "@/components/Worklogs";
 import { Component, createMemo } from "solid-js";
 import { context } from "@/context";
 

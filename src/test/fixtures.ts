@@ -11,3 +11,5 @@ export function testWorklog(overrides: Partial<WorklogData> = {}): WorklogData {
     ...overrides,
   };
 }
+
+export const jsonResponse = (json: any) => new Response(JSON.stringify(json));

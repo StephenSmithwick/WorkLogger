@@ -30,7 +30,6 @@ export const authUser = (c: Context) => c.get(JWT_PAYLOAD) as User;
 const useAuth =
   import.meta.env.PROD ||
   (env.GOOGLE_ID !== undefined && env.GOOGLE_ID !== undefined);
-console.log("useAuth", useAuth);
 const authenticator = useAuth
   ? googleAuth({
       client_id: env.GOOGLE_ID,

@@ -106,7 +106,6 @@ export const api = new Hono<{
 
 async function insertWorklog(db: DB, values: WorklogInsert): Promise<Worklog> {
   const [inserted] = await db.insert(worklog).values(values).returning();
-  console.log("inserted", inserted);
   return inserted;
 }
 

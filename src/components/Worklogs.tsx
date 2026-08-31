@@ -10,10 +10,10 @@ type WorklogsProps = {
   to: () => string;
 };
 
-export default function Worklogs({ from, to }: WorklogsProps) {
+export function Worklogs({ from, to }: WorklogsProps) {
   const { api } = context();
 
-  const [worklog, { refetch: refetchWorklog }] = createResource(
+  const [worklogs, { refetch: refetchWorklogs }] = createResource(
     () => ({ from: from(), to: to() }),
     async (range) => {
       const res = await api.worklog.$get({
@@ -51,24 +51,24 @@ export default function Worklogs({ from, to }: WorklogsProps) {
   function worklogFormSubmit() {
     setFormExpanded(false);
     setEditingWorklog(undefined);
-    refetchWorklog();
+    refetchWorklogs();
   }
 
   return (
     <ul>
       <Suspense fallback={<li>Loading...</li>}>
         <Show
-          when={!worklog.error}
-          fallback={<li>{`Error: ${worklog.error?.message}`}</li>}
+          when={!worklogs.error}
+          fallback={<li>{`Error: ${worklogs.error?.message}`}</li>}
         >
-          <For each={worklog()}>
-            {(wl) => (
+          <For each={worklogs()}>
+            {(worklog) => (
               <li>
                 <Worklog
-                  worklog={wl}
-                  onDeleted={refetchWorklog}
-                  onEdit={edit(wl)}
-                  editing={wl.id === editingWorklog()?.id}
+                  worklog={worklog}
+                  onDeleted={refetchWorklogs}
+                  onEdit={edit(worklog)}
+                  editing={worklog.id === editingWorklog()?.id}
                 />
               </li>
             )}
