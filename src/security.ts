@@ -26,17 +26,11 @@ interface AuthenticatorUser {
 
 export const authUser = (c: Context) => c.get(JWT_PAYLOAD) as User;
 
-const fakeAuth = noAuth<AuthenticatorUser>(GOOGLE_AUTH_VARIABLE, {
-  id: "dev",
-  name: "Developer",
-  email: "dev@example.com",
-});
-
 type ENV = { GOOGLE_ID: string; GOOGLE_SECRET: string };
 
 const useAuth = (env: ENV) =>
   import.meta.env.PROD ||
-  (env.GOOGLE_ID !== undefined && env.GOOGLE_ID !== undefined);
+  (env.GOOGLE_ID !== undefined && env.GOOGLE_SECRET !== undefined);
 
 const realAuth = (env: ENV) =>
   googleAuth({
@@ -45,17 +39,19 @@ const realAuth = (env: ENV) =>
     scope: ["openid", "email", "profile"],
   });
 
-const authenticator = (env: ENV) => {
-  console.log("useAuth(env)", useAuth(env));
-  return useAuth(env) ? realAuth : fakeAuth;
-};
+const fakeAuth = noAuth<AuthenticatorUser>(GOOGLE_AUTH_VARIABLE, {
+  id: "dev",
+  name: "Developer",
+  email: "dev@example.com",
+});
+
+const selectAuth = (env: ENV) => (useAuth(env) ? realAuth(env) : fakeAuth);
 
 export const useAuthenticator = new Hono<{
   Bindings: CloudflareBindings;
 }>()
-  .use(AUTH_PATH, async (c: Context) => authenticator(c.env))
+  .use(AUTH_PATH, (c, next) => selectAuth(c.env)(c, next))
   .get(AUTH_PATH, async (c) => {
-    console.log("GOOGLE_AUTH_VARIABLE");
     const user = c.get(GOOGLE_AUTH_VARIABLE);
     if (!user) return c.text("Google authentication failed", 401);
 
