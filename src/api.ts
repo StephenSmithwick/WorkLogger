@@ -110,9 +110,6 @@ export const createAPI = (db: LoadDB) =>
     })
     .delete("/worklog", async (c) => {
       const { id } = await c.req.json();
-      await c.var.db
-        .delete(worklog_label)
-        .where(eq(worklog_label.worklogId, id));
       const deletedWorklog = await c.var.db
         .delete(worklog)
         .where(and(eq(worklog.id, id), eq(worklog.user, authUser(c).sub)))

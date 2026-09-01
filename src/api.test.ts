@@ -76,3 +76,62 @@ test("Api returns only worklogs that match user", async () => {
     },
   ]);
 });
+
+test("Delete only removes worklog and associated worklog_labels", async () => {
+  const { db, client } = await setup();
+  await db.insert(worklog).values([
+    {
+      user: "dev_user",
+      name: "test",
+      notes: "notes",
+      time: new Date("2020-01-01T12:00"),
+      duration: "1 hour",
+    },
+  ]);
+
+  await db.insert(label).values([{ name: "test", user: "dev_user" }]);
+  await db.insert(worklog_label).values([{ worklogId: 1, labelId: 1 }]);
+
+  await client.worklog.$delete({ json: { id: 1 } }, await headers("dev_user"));
+
+  expect(await db.select().from(worklog)).toEqual([]);
+  expect(await db.select().from(worklog_label)).toEqual([]);
+  expect(await db.select().from(label)).toEqual([
+    { id: 1, name: "test", user: "dev_user" },
+  ]);
+});
+
+test("Delete does not touch unowned worklogs", async () => {
+  const { db, client } = await setup();
+  await db.insert(worklog).values([
+    {
+      user: "dev_user",
+      name: "test",
+      notes: "notes",
+      time: new Date("2020-01-01T12:00"),
+      duration: "1 hour",
+    },
+  ]);
+
+  await db.insert(label).values([{ name: "test", user: "dev_user" }]);
+  await db.insert(worklog_label).values([{ worklogId: 1, labelId: 1 }]);
+
+  await client.worklog.$delete({ json: { id: 1 } }, await headers("evil_user"));
+
+  expect(await db.select().from(worklog)).toEqual([
+    {
+      id: 1,
+      user: "dev_user",
+      name: "test",
+      notes: "notes",
+      time: new Date("2020-01-01T12:00"),
+      duration: "01:00:00",
+    },
+  ]);
+  expect(await db.select().from(worklog_label)).toEqual([
+    { worklogId: 1, labelId: 1 },
+  ]);
+  expect(await db.select().from(label)).toEqual([
+    { id: 1, name: "test", user: "dev_user" },
+  ]);
+});

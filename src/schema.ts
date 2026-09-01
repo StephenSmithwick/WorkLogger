@@ -28,7 +28,7 @@ export const worklog_label = pgTable(
   {
     worklogId: integer("worklog_id")
       .notNull()
-      .references(() => worklog.id),
+      .references(() => worklog.id, { onDelete: "cascade" }),
     labelId: integer("label_id")
       .notNull()
       .references(() => label.id),
