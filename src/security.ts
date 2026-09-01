@@ -3,7 +3,6 @@ import { getCookie, setCookie } from "hono/cookie";
 import { googleAuth } from "@hono/oauth-providers/google";
 import { sign, jwt, type JwtVariables, verify } from "hono/jwt";
 import { noAuth } from "@/noAuthHandler";
-import { env } from "cloudflare:workers";
 
 const AUTH_TOKEN = "auth_token";
 const AUTH_PATH = "/auth/google";
@@ -27,31 +26,38 @@ interface AuthenticatorUser {
 
 export const authUser = (c: Context) => c.get(JWT_PAYLOAD) as User;
 
-const useAuth =
+const fakeAuth = noAuth<AuthenticatorUser>(GOOGLE_AUTH_VARIABLE, {
+  id: "dev",
+  name: "Developer",
+  email: "dev@example.com",
+});
+
+type ENV = { GOOGLE_ID: string; GOOGLE_SECRET: string };
+
+const useAuth = (env: ENV) =>
   import.meta.env.PROD ||
   (env.GOOGLE_ID !== undefined && env.GOOGLE_ID !== undefined);
-const authenticator = useAuth
-  ? googleAuth({
-      client_id: env.GOOGLE_ID,
-      client_secret: env.GOOGLE_SECRET,
-      scope: ["openid", "email", "profile"],
-    })
-  : noAuth<AuthenticatorUser>(GOOGLE_AUTH_VARIABLE, {
-      id: "dev",
-      name: "Developer",
-      email: "dev@example.com",
-    });
 
-export const googleAuthentication = new Hono<{
+const realAuth = (env: ENV) =>
+  googleAuth({
+    client_id: env.GOOGLE_ID,
+    client_secret: env.GOOGLE_SECRET,
+    scope: ["openid", "email", "profile"],
+  });
+
+const authenticator = (env: ENV) => {
+  console.log("useAuth(env)", useAuth(env));
+  return useAuth(env) ? realAuth : fakeAuth;
+};
+
+export const useAuthenticator = new Hono<{
   Bindings: CloudflareBindings;
 }>()
-  .use(AUTH_PATH, authenticator)
+  .use(AUTH_PATH, async (c: Context) => authenticator(c.env))
   .get(AUTH_PATH, async (c) => {
+    console.log("GOOGLE_AUTH_VARIABLE");
     const user = c.get(GOOGLE_AUTH_VARIABLE);
-
-    if (!user) {
-      return c.text("Google authentication failed", 401);
-    }
+    if (!user) return c.text("Google authentication failed", 401);
 
     const payload = {
       sub: user.id!,
@@ -59,7 +65,6 @@ export const googleAuthentication = new Hono<{
       name: user.name!,
       exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24,
     };
-
     const token = await sign(payload, c.env.JWT_SECRET!);
 
     setCookie(c, AUTH_TOKEN, token, {
@@ -72,15 +77,9 @@ export const googleAuthentication = new Hono<{
     return c.redirect("/");
   });
 
-/**
- * Checks for jwt auth_token and fails if not found
- */
 export const requireAuthCookie: MiddlewareHandler = (c, next) =>
   jwt({ secret: c.env.JWT_SECRET, alg, cookie: AUTH_TOKEN })(c, next);
 
-/**
- * Checks for jwt auth_token and redirects to auth page if not found
- */
 export const requireAuthPage: MiddlewareHandler = async (c, next) => {
   try {
     const token = getCookie(c, AUTH_TOKEN);

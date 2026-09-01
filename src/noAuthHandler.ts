@@ -1,6 +1,6 @@
 import { MiddlewareHandler } from "hono";
 
-export function noAuthenticationFactory<User>(
+export function noAuth<User>(
   contextField: string,
   user: User,
 ): MiddlewareHandler<{ Variables: Record<string, User> }> {
@@ -9,5 +9,3 @@ export function noAuthenticationFactory<User>(
     await next();
   };
 }
-
-export const noAuth = noAuthenticationFactory;

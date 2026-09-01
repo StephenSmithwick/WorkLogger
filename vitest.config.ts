@@ -1,5 +1,3 @@
-// import { mergeConfig } from "vitest/config";
-// import { viteConfig } from "./vite.config";
 import { defineConfig } from "vitest/config";
 import solid from "vite-plugin-solid";
 import { playwright } from "@vitest/browser-playwright";
@@ -16,13 +14,28 @@ export default defineConfig({
 
   test: {
     setupFiles: ["src/test/setup.ts"],
-    include: ["src/**/*.test.tsx"],
+    projects: [
+      {
+        extends: true,
+        test: {
+          name: "server",
+          include: ["src/**/*.test.ts"],
+        },
+      },
 
-    browser: {
-      enabled: true,
-      provider: playwright(),
-      headless: true,
-      instances: [{ browser: "chromium" }],
-    },
+      {
+        extends: true,
+        test: {
+          name: "browser",
+          include: ["src/**/*.test.tsx"],
+          browser: {
+            enabled: true,
+            provider: playwright(),
+            headless: true,
+            instances: [{ browser: "chromium" }],
+          },
+        },
+      },
+    ],
   },
 });

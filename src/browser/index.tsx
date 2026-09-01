@@ -1,10 +1,9 @@
 import { hydrate } from "solid-js/web";
 import { ContextRouter } from "@/ContextRouter";
-import { ApiClient } from "@/context";
-import { AppType } from "@/api";
+import { ApiType } from "@/api";
 import { hc } from "hono/client";
 
-const client = hc<AppType>(window.location?.origin ?? "") as ApiClient;
+const client = hc<ApiType>(window.location?.origin ?? "");
 
 if (import.meta.env.PROD && "serviceWorker" in navigator) {
   window.addEventListener("load", () => {

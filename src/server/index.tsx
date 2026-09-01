@@ -3,17 +3,16 @@
 import { Hono, type Context } from "hono";
 import { raw } from "hono/html";
 import { renderer } from "@/server/renderer";
-import { api, AppType } from "@/api";
+import { createAPI, ApiType } from "@/api";
 import { hc } from "hono/client";
 import { renderContextRouter } from "@/ContextRouter";
-import {
-  googleAuthentication,
-  requireAuthPage,
-  requireAuthCookie,
-} from "@/security";
+import { useAuthenticator, requireAuthPage } from "@/security";
+import { remoteDB } from "@/db";
+
+const api = createAPI(remoteDB);
 
 const client = (c: Context) =>
-  hc<AppType>("http://isServer", {
+  hc<ApiType>("http://isServer", {
     fetch: async (input: RequestInfo | URL, init?: RequestInit) =>
       api.request(
         input,
@@ -41,7 +40,7 @@ const renderRoot = async (c: Context) =>
 const app = new Hono<{ Bindings: CloudflareBindings }>();
 
 export default app
-  .route("/", googleAuthentication)
+  .route("/", useAuthenticator)
   .use(renderer)
   .use("/", requireAuthPage)
   .get("/", renderRoot)

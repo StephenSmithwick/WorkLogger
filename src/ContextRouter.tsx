@@ -2,9 +2,10 @@ import { Component, onMount, createSignal } from "solid-js";
 import { renderToStringAsync, Show } from "solid-js/web";
 import { Route, Router, useNavigate, useParams } from "@solidjs/router";
 import App from "@/App";
-import { AppContext, ApiClient } from "@/context";
+import { AppContext } from "@/context";
 import { createTimeAPI } from "@/TimeAPI";
 import "temporal-polyfill/global";
+import { ApiClient } from "@/api";
 
 interface Props {
   client: ApiClient;
@@ -43,7 +44,7 @@ const RedirectDefaults: Component = () => {
   return <p>Loading...</p>;
 };
 
-const WorklogRoute: Component<{ client: ApiClient }> = (props) => {
+const WorklogRoute: Component<{ client: ApiType }> = (props) => {
   const params = useParams<{ timezone: string; date: string }>();
   const navigate = useNavigate();
 

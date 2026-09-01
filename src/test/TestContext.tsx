@@ -1,6 +1,7 @@
 import { vi, Mock } from "vitest";
 
-import { AppContext, AppContextValue, ApiClient } from "@/context";
+import { AppContext, AppContextValue } from "@/context";
+import { ApiClient } from "@/api";
 import { TestTimeAPI } from "@/test/TestTimeAPI";
 import { splitProps, ParentComponent } from "solid-js";
 import { jsonResponse } from "./fixtures";
