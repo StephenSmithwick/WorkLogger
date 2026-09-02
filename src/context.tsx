@@ -4,7 +4,6 @@ import type { TimeAPI } from "@/TimeAPI";
 
 export interface AppContextValue {
   api: ApiClient;
-  timezone: string;
   time: TimeAPI;
 }
 

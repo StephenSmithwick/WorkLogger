@@ -16,11 +16,9 @@ type ApiOverrides = {
 type AppContextOverrides = {
   api?: ApiOverrides;
   time?: TestTimeAPI;
-  timezone?: string;
 };
 
 function testContext(overrides: AppContextOverrides): AppContextValue {
-  const timezone = overrides.timezone ?? "America/Denver";
   const api = {
     worklog: {
       $post: vi.fn(),
@@ -34,9 +32,10 @@ function testContext(overrides: AppContextOverrides): AppContextValue {
     },
   } as any;
 
-  const time = overrides.time ?? new TestTimeAPI(timezone, "2026-08-25T04:00");
+  const time =
+    overrides.time ?? new TestTimeAPI("Europe/London", "1970-01-01T00:00");
 
-  return { api, time, timezone };
+  return { api, time };
 }
 
 export const TestContext: ParentComponent<AppContextOverrides> = (props) => {

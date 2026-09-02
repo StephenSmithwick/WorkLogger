@@ -4,6 +4,7 @@ import { WorklogForm } from "./WorklogForm";
 import { testWorklog } from "@/test/fixtures";
 import { TestContext } from "@/test/TestContext";
 import { WorklogFormView } from "@/test/WorklogFormView";
+import { TestTimeAPI } from "@/test/TestTimeAPI";
 
 test("WorklogForm has correct defaults", () => {
   const { container } = render(() => (
@@ -23,7 +24,7 @@ test("WorklogForm has correct defaults", () => {
   expect(received.values()).toEqual({
     id: "NaN",
     duration: "1 hour",
-    time: "2026-08-25T04:00",
+    time: "00:00",
     name: "",
     notes: "",
     labels: [],
@@ -59,7 +60,7 @@ test("WorklogForm populates from an existing worklog", () => {
   expect(received.values()).toEqual({
     id: "1",
     duration: "2 hours",
-    time: "2026-08-25T01:00",
+    time: "08:00",
     name: "Test",
     notes: "Test notes",
     labels: ["test", "test 2"],
@@ -70,7 +71,10 @@ test("WorklogForm updates an existing worklog", () => {
   const worklog = testWorklog({ id: 1 });
   const $post = vi.fn();
   const { container } = render(() => (
-    <TestContext api={{ worklog: { $post } }}>
+    <TestContext
+      api={{ worklog: { $post } }}
+      time={new TestTimeAPI("America/Denver", "2020-01-01T01:00")}
+    >
       <WorklogForm
         worklog={() => worklog}
         labels={() => []}
@@ -86,7 +90,7 @@ test("WorklogForm updates an existing worklog", () => {
   form.setValues({
     name: "Test",
     duration: "2 hours",
-    time: "2026-08-25T01:00",
+    time: "01:00",
     notes: "Test notes",
     labels: [
       { input: "test", select: "Create test" },
@@ -97,7 +101,7 @@ test("WorklogForm updates an existing worklog", () => {
   expect(form.values()).toEqual({
     id: "1",
     duration: "2 hours",
-    time: "2026-08-25T01:00",
+    time: "01:00",
     name: "Test",
     notes: "Test notes",
     labels: ["test", "test 2"],
@@ -111,7 +115,7 @@ test("WorklogForm updates an existing worklog", () => {
       labels: [{ name: "test" }, { name: "test 2" }],
       name: "Test work",
       notes: "Test notes",
-      time: "2026-08-25T10:00:00.000Z",
+      time: "2020-01-01T05:30:00-07:00",
     },
   });
 });

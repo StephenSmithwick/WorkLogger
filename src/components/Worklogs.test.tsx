@@ -48,7 +48,7 @@ test("Worklogs to contain apiResults", async () => {
     {
       name: "✎Testing",
       notes: "notes",
-      time: "8/29/2026, 11:59 AM MDT",
+      time: "8/29/2026, 6:59 PM GMT+1",
       duration: "01:00:00",
       labels: ["label"],
     },

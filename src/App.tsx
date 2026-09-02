@@ -8,11 +8,7 @@ export interface AppProps {
   onSelectedDayChange: (date: string) => void;
 }
 
-const App: Component<AppProps> = ({
-  timezone,
-  selectedDay,
-  onSelectedDayChange,
-}) => {
+const App: Component<AppProps> = ({ selectedDay, onSelectedDayChange }) => {
   const { time } = context();
 
   const from = createMemo(() => time.toAPITime(selectedDay()));

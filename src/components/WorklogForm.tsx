@@ -27,7 +27,7 @@ export function WorklogForm(props: WorkLogFormProps) {
 
   const defaultState = (): WorklogData => ({
     id: NaN,
-    time: time.now(),
+    time: time.defaultTime(),
     duration: "1 hour",
     name: "",
     notes: "",
@@ -80,6 +80,7 @@ export function WorklogForm(props: WorkLogFormProps) {
       props.onSubmitted();
     } catch (err) {
       // TODO: Can probably recreate this using an <ErrorBoundary>
+      console.error(err);
       setError(err instanceof Error ? err.message : "Unknown error");
     } finally {
       setSubmitting(false);
@@ -100,7 +101,7 @@ export function WorklogForm(props: WorkLogFormProps) {
         </li>
         <li class="time expandable">
           <input
-            type="datetime-local"
+            type="time"
             name="time"
             value={state.time}
             onInput={(e) =>

@@ -12,7 +12,7 @@ interface WorklogProps {
 
 export const Worklog = (props: WorklogProps) => {
   const { time } = context();
-  const worklogTime = time.toDisplayTime(props.worklog.time);
+  const worklogTime = time.displayDateTime(props.worklog.time);
   return (
     <ul
       class="worklog"

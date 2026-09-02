@@ -3,7 +3,7 @@ import { renderToStringAsync, Show } from "solid-js/web";
 import { Route, Router, useNavigate, useParams } from "@solidjs/router";
 import App from "@/App";
 import { AppContext } from "@/context";
-import { createTimeAPI } from "@/TimeAPI";
+import { TimeAPI } from "@/TimeAPI";
 import "temporal-polyfill/global";
 import { ApiClient } from "@/api";
 
@@ -44,13 +44,14 @@ const RedirectDefaults: Component = () => {
   return <p>Loading...</p>;
 };
 
-const WorklogRoute: Component<{ client: ApiType }> = (props) => {
+const WorklogRoute: Component<{ client: ApiClient }> = (props) => {
   const params = useParams<{ timezone: string; date: string }>();
   const navigate = useNavigate();
 
   const timezone = params.timezone.replace(/~/g, "/");
-  const time = createTimeAPI(timezone);
+
   const [date, setDate] = createSignal(params.date);
+  const time = new TimeAPI(timezone, date);
 
   onMount(() => {
     if (!isValidTimezone(timezone) || !isValidDate(date())) {
@@ -63,7 +64,7 @@ const WorklogRoute: Component<{ client: ApiType }> = (props) => {
       when={isValidTimezone(timezone) && isValidDate(date())}
       fallback={<p>Loading...</p>}
     >
-      <AppContext.Provider value={{ api: props.client, timezone, time }}>
+      <AppContext.Provider value={{ api: props.client, time }}>
         <App
           timezone={timezone}
           selectedDay={date}
