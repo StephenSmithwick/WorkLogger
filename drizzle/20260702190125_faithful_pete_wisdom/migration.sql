@@ -17,5 +17,5 @@ CREATE TABLE "worklog" (
 	"duration" interval
 );
 --> statement-breakpoint
-ALTER TABLE "worklog_label" ADD CONSTRAINT "worklog_label_worklog_id_worklog_id_fk" FOREIGN KEY ("worklog_id") REFERENCES "public"."worklog"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "worklog_label" ADD CONSTRAINT "worklog_label_worklog_id_worklog_id_fkey" FOREIGN KEY ("worklog_id") REFERENCES "public"."worklog"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "worklog_label" ADD CONSTRAINT "worklog_label_label_id_label_id_fk" FOREIGN KEY ("label_id") REFERENCES "public"."label"("id") ON DELETE no action ON UPDATE no action;
