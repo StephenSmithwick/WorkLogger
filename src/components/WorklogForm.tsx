@@ -4,6 +4,8 @@ import {
   onMount,
   Show,
   createMemo,
+  Accessor,
+  Setter,
 } from "solid-js";
 import { context } from "@/context";
 import { createStore } from "solid-js/store";
@@ -16,8 +18,8 @@ interface WorkLogFormProps {
   labels: () => LabelData[];
   onLabelsCreated: () => void;
   onSubmitted: () => void;
-  expanded: () => boolean;
-  setExpanded: (_: boolean) => void;
+  expanded: Accessor<boolean>;
+  setExpanded: Setter<boolean>;
 }
 
 export function WorklogForm(props: WorkLogFormProps) {
