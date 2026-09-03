@@ -60,7 +60,7 @@ test("WorklogForm populates from an existing worklog", () => {
   expect(received.values()).toEqual({
     id: "1",
     duration: "2 hours",
-    time: "08:00",
+    time: "07:00",
     name: "Test",
     notes: "Test notes",
     labels: ["test", "test 2"],

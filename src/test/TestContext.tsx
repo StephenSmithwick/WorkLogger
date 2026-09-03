@@ -32,8 +32,7 @@ function testContext(overrides: AppContextOverrides): AppContextValue {
     },
   } as any;
 
-  const time =
-    overrides.time ?? new TestTimeAPI("Europe/London", "1970-01-01T00:00");
+  const time = overrides.time ?? new TestTimeAPI("UTC", "1970-01-01T00:00");
 
   return { api, time };
 }
